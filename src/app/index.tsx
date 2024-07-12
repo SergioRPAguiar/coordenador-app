@@ -1,16 +1,18 @@
-import { Link, Redirect } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Link, Redirect } from "expo-router"
+import { StyleSheet, Text, View } from "react-native"
 
-export default function teste() {
-    return(
-        <View style={styles.container}>
-            <Link href="/painel" >Painel </Link >
-        </View>
-    )
+export default function index() {
+  return (
+    
+      <View style={styles.container}>
+        <Link href="/painel">Painel </Link>
+      </View>
+    
+  )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        paddingTop: 50,
-    }
+  container: {
+    paddingTop: 50,
+  },
 })
