@@ -1,11 +1,11 @@
-import { theme } from "@/theme"
-import { StyleSheet, Text, TouchableOpacity } from "react-native"
+import { theme } from "@/theme";
+import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 interface BotaoProps {
-    title: string
-    onPress: () => void
-    style?: object
-    textStyle?: object
+    title: string;
+    onPress: () => void;
+    style?: object;
+    textStyle?: object;
 }
 
 const Botao: React.FC<BotaoProps> = ({ title, onPress, style, textStyle }) => {
@@ -13,7 +13,7 @@ const Botao: React.FC<BotaoProps> = ({ title, onPress, style, textStyle }) => {
         <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
             <Text style={[styles.buttonText, textStyle]}>{title}</Text>
         </TouchableOpacity> 
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -33,6 +33,6 @@ const styles = StyleSheet.create({
         letterSpacing: 0.25,
         color: "white",
     },
-})
+});
 
-export default Botao
+export default Botao;
