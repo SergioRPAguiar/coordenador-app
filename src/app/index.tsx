@@ -6,8 +6,8 @@ import { theme } from '@/theme';
 
 const Painel = () => {
   const components = [
-    { key: 'proximaReuniao', title: 'Próxima Reunião', component: <ProximaReuniao /> },
-    { key: 'calendario', title: 'Calendário', component: <Calendario /> },
+    { key: 'ProximaReuniao', title: 'Próxima Reunião', component: <ProximaReuniao /> },
+    { key: 'Calendario', title: 'Calendário', component: <Calendario /> },
   ];
 
   return (

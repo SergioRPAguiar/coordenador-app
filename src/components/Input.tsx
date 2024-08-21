@@ -1,31 +1,56 @@
+// src/components/Input.tsx
 import React from 'react';
-import { TextInput, StyleSheet, TextInputProps, View } from 'react-native';
+import { View, TextInput, Text, StyleSheet } from 'react-native';
 
-interface CustomInputProps extends TextInputProps {
-  style?: object;
+interface CustomInputProps {
+  placeholder: string;
+  secureTextEntry?: boolean;
+  onChangeText: (text: string) => void;
+  onBlur: () => void;
+  value: string;
+  errorMessage?: string; // Adicione essa linha para aceitar a mensagem de erro
 }
 
-const Input: React.FC<CustomInputProps> = ({ style, ...props }) => {
+const Input: React.FC<CustomInputProps> = ({ 
+  placeholder, 
+  secureTextEntry = false, 
+  onChangeText, 
+  onBlur, 
+  value, 
+  errorMessage 
+}) => {
   return (
     <View style={styles.container}>
-      <TextInput style={[styles.input, style]} {...props} />
+      <TextInput
+        style={[styles.input, errorMessage ? styles.inputError : null]}
+        placeholder={placeholder}
+        secureTextEntry={secureTextEntry}
+        onChangeText={onChangeText}
+        onBlur={onBlur}
+        value={value}
+      />
+      {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    alignItems: "center",
+    width: '100%',
+    marginBottom: 20,
   },
   input: {
-    width: "80%",
-    height: 40,
     borderWidth: 1,
-    borderColor: "#008739",
+    borderColor: '#ccc',
+    padding: 10,
     borderRadius: 5,
-    marginBottom: 10,
-    paddingLeft: 10,
+  },
+  inputError: {
+    borderColor: 'red',
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 5,
   },
 });
 

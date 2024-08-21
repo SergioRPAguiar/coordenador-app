@@ -75,22 +75,28 @@ export const AuthProvider = ({ children }: any) => {
   };
 
   const logout = async () => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-
-    axios.defaults.headers.common["Authorization"] = "";
-
-    setAuthState({
-      token: null,
-      authenticated: false
-    });
+    try {
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      delete axios.defaults.headers.common["Authorization"];
+      setAuthState({
+        token: null,
+        authenticated: false
+      });
+    } catch (e) {
+      console.log("Erro ao sair:", e);
+    }
   };
 
-  const value = {
-    onRegister: register,
-    onLogin: login,
-    onLogout: logout,
-    authState
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        authState,
+        onRegister: register,
+        onLogin: login,
+        onLogout: logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };

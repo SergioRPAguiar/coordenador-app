@@ -7,24 +7,36 @@ const Calendario = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const router = useRouter();
 
+  console.log("Calendario renderizado com data atual:", currentDate);
+
   const onDayPress = (day: { dateString: string }) => {
-    router.push(`/dias/${day.dateString}`);
+    console.log("Dia pressionado:", day.dateString);
+    router.push(`/${day.dateString}`);
   };
 
   const changeMonth = (direction: number) => {
     const newDate = new Date(currentDate);
     newDate.setMonth(currentDate.getMonth() + direction);
     setCurrentDate(newDate);
+    console.log("Mês alterado para:", newDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }));
   };
 
   return (
     <View>
       <View style={styles.monthSelector}>
-        <TouchableOpacity onPress={() => changeMonth(-1)}>
+        <TouchableOpacity 
+          onPress={() => changeMonth(-1)}
+          accessibilityLabel="Mês anterior"
+          accessibilityHint="Navega para o mês anterior"
+        >
           <Text>Anterior</Text>
         </TouchableOpacity>
         <Text>{currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</Text>
-        <TouchableOpacity onPress={() => changeMonth(1)}>
+        <TouchableOpacity 
+          onPress={() => changeMonth(1)}
+          accessibilityLabel="Próximo mês"
+          accessibilityHint="Navega para o próximo mês"
+        >
           <Text>Próximo</Text>
         </TouchableOpacity>
       </View>
@@ -38,7 +50,6 @@ const Calendario = () => {
 
 const styles = StyleSheet.create({
   monthSelector: {
-    backgroundColor: 'red',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

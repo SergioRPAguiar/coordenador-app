@@ -1,17 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Image, StyleSheet, Alert, Text } from 'react-native';
-import { useAuth } from './context/AuthContext';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useAuth } from '@/app/context/AuthContext';
 import { theme } from '@/theme';
 import Botao from '@/components/Botao';
 import Input from '@/components/Input';
 
+// Validação com Yup
+const schema = yup.object({
+  email: yup.string().email("Email inválido").required("Informe o email"),
+  password: yup.string().min(6, "A senha deve ter pelo menos 6 caracteres").required("Informe a senha"),
+});
+
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { control, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+  });
+
   const { onLogin, onRegister } = useAuth();
 
-  const handleLogin = async () => {
-    const result = await onLogin!(email, password);
+  const handleLogin = async (data: { email: string, password: string }) => {
+    const result = await onLogin!(data.email, data.password);
     if (result && result.error) {
       Alert.alert(result.msg);
     } else {
@@ -19,8 +30,8 @@ const Login = () => {
     }
   };
 
-  const handleRegister = async () => {
-    const result = await onRegister!(email, password);
+  const handleRegister = async (data: { email: string, password: string }) => {
+    const result = await onRegister!(data.email, data.password);
     if (result && result.error) {
       Alert.alert(result.msg);
     }
@@ -34,24 +45,41 @@ const Login = () => {
           source={require("../../assets/images/logoif.png")}
         />
         <Text style={styles.text}>
-            AGENDA{"\n"}COTAD
+          AGENDA{"\n"}COTAD
         </Text>
       </View>
       <View style={styles.form}>
-        
-        <Input
-          placeholder="Email"
-          onChangeText={(text: string) => setEmail(text)}
-          value={email}
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <Input
+              placeholder="Email"
+              onChangeText={onChange}
+              onBlur={onBlur}
+              value={value}
+              errorMessage={errors.email?.message}
+            />
+          )}
         />
-        <Input
-          placeholder="Senha"
-          secureTextEntry={true}
-          onChangeText={(text: string) => setPassword(text)}
-          value={password}
+
+        <Controller
+          control={control}
+          name="password"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <Input
+              placeholder="Senha"
+              secureTextEntry={true}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              value={value}
+              errorMessage={errors.password?.message}
+            />
+          )}
         />
-        <Botao title="Login" onPress={handleLogin} />
-        <Botao title="Criar Conta" onPress={handleRegister} />
+
+        <Botao title="Login" onPress={handleSubmit(handleLogin)} />
+        <Botao title="Criar Conta" onPress={handleSubmit(handleRegister)} />
       </View>
     </View>
   );
