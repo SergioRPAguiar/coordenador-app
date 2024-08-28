@@ -8,7 +8,7 @@ interface CustomInputProps {
   onChangeText: (text: string) => void;
   onBlur: () => void;
   value: string;
-  errorMessage?: string; // Adicione essa linha para aceitar a mensagem de erro
+  errorMessage?: string; 
 }
 
 const Input: React.FC<CustomInputProps> = ({ 

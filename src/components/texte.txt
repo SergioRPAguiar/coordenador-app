@@ -1,0 +1,22 @@
+app/
+├── (tabs)/
+│   ├── [date]/
+│   │   ├── _layout.tsx
+│   │   ├── manha.tsx
+│   │   ├── noite.tsx
+│   └── ├── tarde.tsx
+├── context/
+│   ├── AuthContext.tsx
+├── _layout.tsx
+├── index.tsx
+├── login.tsx
+├── PainelAluno.tsx
+├── registro.tsx
+├── index.tsx
+├── components/
+    ├── Botao.tsx
+    ├── Calendario.tsx
+    ├── HorariosDisponiveis.tsx
+    ├── Input.tsx
+    ├── ProximaReuniao.tsx
+    ├── ProximaReuniaoAluno.tsx

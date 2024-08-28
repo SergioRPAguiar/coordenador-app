@@ -4,35 +4,31 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '@/app/context/AuthContext';
-import { useRouter } from 'expo-router';
 import { theme } from '@/theme';
 import Botao from '@/components/Botao';
 import Input from '@/components/Input';
 
 const schema = yup.object({
+  name: yup.string().required("Informe o nome"),
   email: yup.string().email("Email inválido").required("Informe o email"),
+  contact: yup.string().required("Informe o contato"),
   password: yup.string().min(6, "A senha deve ter pelo menos 6 caracteres").required("Informe a senha"),
 });
 
-const Login = () => {
+const Register = () => {
   const { control, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
   });
 
-  const { onLogin } = useAuth();
-  const router = useRouter();
+  const { onRegister } = useAuth();
 
-  const handleLogin = async (data: { email: string, password: string }) => {
-    const result = await onLogin!(data.email, data.password);
+  const handleRegister = async (data: { name: string, email: string, contact: string, password: string }) => {
+    const result = await onRegister!(data.email, data.password);
     if (result && result.error) {
       Alert.alert(result.msg);
     } else {
-      Alert.alert("Sucesso", "Login bem-sucedido!");
+      Alert.alert("Sucesso", "Cadastro bem-sucedido!");
     }
-  };
-
-  const handleNavigateToRegister = () => {
-    router.push('/registro'); 
   };
 
   return (
@@ -49,6 +45,20 @@ const Login = () => {
       <View style={styles.form}>
         <Controller
           control={control}
+          name="name"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <Input
+              placeholder="Nome"
+              onChangeText={onChange}
+              onBlur={onBlur}
+              value={value}
+              errorMessage={errors.name?.message}
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
           name="email"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
@@ -57,6 +67,20 @@ const Login = () => {
               onBlur={onBlur}
               value={value}
               errorMessage={errors.email?.message}
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="contact"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <Input
+              placeholder="Contato"
+              onChangeText={onChange}
+              onBlur={onBlur}
+              value={value}
+              errorMessage={errors.contact?.message}
             />
           )}
         />
@@ -76,8 +100,7 @@ const Login = () => {
           )}
         />
 
-        <Botao title="Login" onPress={handleSubmit(handleLogin)} />
-        <Botao title="Criar Conta" onPress={handleNavigateToRegister} /> {/* Botão para redirecionar */}
+        <Botao title="Registrar" onPress={handleSubmit(handleRegister)} />
       </View>
     </View>
   );
@@ -117,4 +140,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Login;
+export default Register;

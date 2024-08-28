@@ -1,59 +1,57 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { Calendar } from 'react-native-calendars';
-import { useRouter } from 'expo-router';
+// src/components/Calendario.tsx
+
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import HorariosDisponiveis from './HorariosDisponiveis';
+import { useAuth } from '@/app/context/AuthContext';
 
 const Calendario = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const router = useRouter();
+  const { user } = useAuth();
+  const [horarios, setHorarios] = useState<{[key: string]: string[]}>({});
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  console.log("Calendario renderizado com data atual:", currentDate);
-
-  const onDayPress = (day: { dateString: string }) => {
-    console.log("Dia pressionado:", day.dateString);
-    router.push(`/${day.dateString}`);
+  const fetchHorariosDisponiveis = async (date: string) => {
+    // Simulação de uma chamada API para buscar horários disponíveis do professor
+    const response = await new Promise<{ data: { [key: string]: string[] } }>((resolve) =>
+      setTimeout(() => resolve({ data: {
+        manha: ['08:00', '09:00'],
+        tarde: ['14:00', '15:00'],
+        noite: ['19:00', '20:00'],
+      }}), 1000) // substitua por chamada real
+    );
+    setHorarios(response.data);
+    setSelectedDate(date);
   };
 
-  const changeMonth = (direction: number) => {
-    const newDate = new Date(currentDate);
-    newDate.setMonth(currentDate.getMonth() + direction);
-    setCurrentDate(newDate);
-    console.log("Mês alterado para:", newDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }));
+  const handleDayPress = (date: string) => {
+    fetchHorariosDisponiveis(date);
   };
 
   return (
-    <View>
-      <View style={styles.monthSelector}>
-        <TouchableOpacity 
-          onPress={() => changeMonth(-1)}
-          accessibilityLabel="Mês anterior"
-          accessibilityHint="Navega para o mês anterior"
-        >
-          <Text>Anterior</Text>
-        </TouchableOpacity>
-        <Text>{currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</Text>
-        <TouchableOpacity 
-          onPress={() => changeMonth(1)}
-          accessibilityLabel="Próximo mês"
-          accessibilityHint="Navega para o próximo mês"
-        >
-          <Text>Próximo</Text>
-        </TouchableOpacity>
-      </View>
-      <Calendar
-        current={currentDate.toISOString().split('T')[0]}
-        onDayPress={onDayPress}
-      />
+    <View style={styles.container}>
+      <Text style={styles.title}>Selecione um dia</Text>
+      <TouchableOpacity onPress={() => handleDayPress('2024-08-10')}>
+        <Text>10 de Agosto de 2024</Text>
+      </TouchableOpacity>
+
+      {selectedDate && (
+        <HorariosDisponiveis horarios={horarios} />
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  monthSelector: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 10,
+  container: {
+    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    elevation: 5,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
 });
 
