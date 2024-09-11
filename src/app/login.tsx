@@ -28,6 +28,7 @@ const Login = () => {
       Alert.alert(result.msg);
     } else {
       Alert.alert("Sucesso", "Login bem-sucedido!");
+      router.replace('/'); // Substitui a página atual pela página principal, causando um refresh
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'expo-router'; // Importa o useRouter para navegação no Expo Router
 
@@ -21,15 +21,21 @@ const ProximaReuniao = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Próxima Reunião</Text>
       <View style={styles.infoContainer}>
-        <Text style={styles.info}>
-          {proximaReuniao ? `${proximaReuniao.date} às ${proximaReuniao.time}` : '-'}
-        </Text>
-        <Button
-          title="Mostrar todas as reuniões"
-          onPress={() => router.push('/professor/reunioesMarcadas')} // Navega para a página de reuniões marcadas
-        />
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>Próxima{'\n'}Reunião</Text>
+        </View>
+        <View style={styles.dateContainer}>
+          <Text style={styles.info}>
+            {proximaReuniao ? `${proximaReuniao.date}\nàs ${proximaReuniao.time}` : '-'}
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push('/professor/reunioesMarcadas')}
+        >
+          <Text style={styles.buttonText}>Reuniões Marcadas</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -41,19 +47,43 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     elevation: 5,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
+    marginVertical: 10,
   },
   infoContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  textContainer: {
+    flex: 2,
+    justifyContent: 'center',
+  },
+  dateContainer: {
+    flex: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  button: {
+    flex: 2,
+    backgroundColor: '#008739', // Cor do tema ou personalizada
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   info: {
     fontSize: 16,
-    color: '#008739',
+    textAlign: 'center',
   },
 });
 

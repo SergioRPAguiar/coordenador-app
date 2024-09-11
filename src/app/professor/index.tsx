@@ -8,7 +8,7 @@ const Painel = () => {
   const { onLogout } = useAuth();  // Contexto de autenticação para logout
 
   const components = [
-    { key: 'ProximaReuniao', title: 'Próxima Reunião', component: <ProximaReuniao /> },
+    { key: 'ProximaReuniao', component: <ProximaReuniao /> },
     { key: 'Calendario', title: 'Calendário', component: <Calendario isProfessor={true} /> },  // Componente com isProfessor=true
   ];
 

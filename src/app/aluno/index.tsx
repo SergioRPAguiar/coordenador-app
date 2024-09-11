@@ -8,7 +8,7 @@ const PainelAluno = () => {
   const { onLogout } = useAuth();
 
   const components = [
-    { key: 'ProximaReuniaoAluno', title: 'Próxima Reunião', component: <ProximaReuniaoAluno /> },
+    { key: 'ProximaReuniaoAluno', component: <ProximaReuniaoAluno /> },
     { key: 'Calendario', title: 'Calendário', component: <Calendario isProfessor={false} /> },
   ];
 

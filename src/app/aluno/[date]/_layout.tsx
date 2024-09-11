@@ -1,11 +1,11 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { Stack } from 'expo-router';
 
 const AlunoLayout = () => {
   return (
-    <Tabs>
-      <Tabs.Screen name="horariosDia" options={{ title: 'Horarios disponiveis no dia' }} />
-    </Tabs>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="horariosDia"  options={{ title: 'Horarios disponiveis no dia' }} />
+    </Stack>
   );
 };
 
