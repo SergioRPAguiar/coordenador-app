@@ -1,57 +1,48 @@
-
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
-import { TabView, SceneMap } from 'react-native-tab-view';
-import Checkbox from 'expo-checkbox';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import axios from 'axios'; // Certifique-se de importar o axios
+import { API_URL } from '@/app/context/AuthContext'; // Certifique-se de importar a API_URL
 import Botao from './Botao';
 
-const HorariosDisponiveis = ({ horarios }: { horarios: { [key: string]: string[] } }) => {
-  const [index, setIndex] = useState(0);
-  const [motivo, setMotivo] = useState('');
+const HorariosDisponiveis = ({ horarios, isProfessor, selectedDate }: { horarios: { [key: string]: string[] }, isProfessor: boolean, selectedDate: string }) => {
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
+  const [motivo, setMotivo] = useState('');
 
-  const renderHorarios = (period: string) => (
-    <View style={styles.tabContainer}>
-      {horarios[period]?.map((hora) => (
-        <View key={hora} style={styles.horarioItem}>
-          <Checkbox
-            value={selectedHorario === hora}
-            onValueChange={(newValue) => setSelectedHorario(newValue ? hora : null)}
-          />
-          <Text style={styles.horarioText}>{hora}</Text>
-        </View>
-      ))}
-    </View>
-  );
-
-  const renderScene = SceneMap({
-    manha: () => renderHorarios('manha'),
-    tarde: () => renderHorarios('tarde'),
-    noite: () => renderHorarios('noite'),
-  });
+  const handleConfirmHorario = async () => {
+    try {
+      const url = isProfessor ? `${API_URL}/professor/set-horario` : `${API_URL}/meeting`;
+      const response = await axios.post(url, {
+        date: selectedDate,
+        time: selectedHorario,
+        motivo: isProfessor ? undefined : motivo, // Motivo é requerido apenas para alunos
+      });
+      console.log("Horário Confirmado:", response.data);
+    } catch (error) {
+      console.error("Erro ao confirmar horário:", error);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <TabView
-        navigationState={{ index, routes: [
-          { key: 'manha', title: 'Manhã' },
-          { key: 'tarde', title: 'Tarde' },
-          { key: 'noite', title: 'Noite' },
-        ]}}
-        renderScene={renderScene}
-        onIndexChange={setIndex}
-        initialLayout={{ width: 300 }}
-        style={styles.tabView}
-      />
+    <View>
+      <Text>Horários Disponíveis</Text>
+      {/* Lógica para exibir os horários e permitir a seleção */}
+      {Object.keys(horarios).map((time) => (
+        <TouchableOpacity key={time} onPress={() => setSelectedHorario(time)}>
+          <Text>{time}</Text>
+        </TouchableOpacity>
+      ))}
+
       {selectedHorario && (
         <View style={styles.confirmContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Motivo da reunião"
-            value={motivo}
-            onChangeText={setMotivo}
-          />
-          <Botao title="Confirmar Horário" onPress={() => console.log('Horário Confirmado!')} />
+          {!isProfessor && (
+            <TextInput
+              style={styles.input}
+              placeholder="Motivo da reunião"
+              value={motivo}
+              onChangeText={setMotivo}
+            />
+          )}
+          <Botao title="Confirmar Horário" onPress={handleConfirmHorario} />
         </View>
       )}
     </View>
@@ -59,24 +50,6 @@ const HorariosDisponiveis = ({ horarios }: { horarios: { [key: string]: string[]
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: 20,
-  },
-  tabView: {
-    marginBottom: 20,
-  },
-  tabContainer: {
-    padding: 10,
-  },
-  horarioItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  horarioText: {
-    marginLeft: 10,
-    fontSize: 16,
-  },
   confirmContainer: {
     marginTop: 20,
   },

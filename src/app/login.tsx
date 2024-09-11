@@ -32,7 +32,7 @@ const Login = () => {
   };
 
   const handleNavigateToRegister = () => {
-    router.push('/registro'); 
+    router.push('/registro');
   };
 
   return (
@@ -77,7 +77,7 @@ const Login = () => {
         />
 
         <Botao title="Login" onPress={handleSubmit(handleLogin)} />
-        <Botao title="Criar Conta" onPress={handleNavigateToRegister} /> {/* Botão para redirecionar */}
+        <Botao title="Criar Conta" onPress={handleNavigateToRegister} />
       </View>
     </View>
   );

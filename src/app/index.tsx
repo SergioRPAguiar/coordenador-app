@@ -8,15 +8,16 @@ export default function Index() {
 
   useEffect(() => {
     if (authState?.authenticated !== null) {
-      const isProfessor = true; 
+      const isProfessor = authState.user?.professor; // Verificar se o usuário é professor pelo campo 'professor'
       if (authState.authenticated) {
-        if (isProfessor) {
-          router.push("/professor/index");
+        if (authState.user?.professor) {
+          router.push('/professor'); // Redireciona para a página do professor
         } else {
-          router.push("/aluno/index");
+          router.push('/aluno'); // Redireciona para a página do aluno
         }
       } else {
-        router.push("/login");
+        console.log("Indo para o login");
+        router.replace("/login"); // Redireciona para a página de login se não autenticado
       }
     }
   }, [authState, router]);

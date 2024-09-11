@@ -8,10 +8,11 @@ import { theme } from '@/theme';
 import Botao from '@/components/Botao';
 import Input from '@/components/Input';
 
+// Atualizando o schema com o nome correto do campo 'contato'
 const schema = yup.object({
   name: yup.string().required("Informe o nome"),
   email: yup.string().email("Email inválido").required("Informe o email"),
-  contact: yup.string().required("Informe o contato"),
+  contato: yup.string().required("Informe o contato"), // Aqui é 'contato'
   password: yup.string().min(6, "A senha deve ter pelo menos 6 caracteres").required("Informe a senha"),
 });
 
@@ -22,8 +23,9 @@ const Register = () => {
 
   const { onRegister } = useAuth();
 
-  const handleRegister = async (data: { name: string, email: string, contact: string, password: string }) => {
-    const result = await onRegister!(data.email, data.password);
+  // Garantindo que o 'contato' é passado corretamente
+  const handleRegister = async (data: { name: string, email: string, contato: string, password: string }) => {
+    const result = await onRegister!(data.name, data.email, data.contato, data.password); // Incluindo contato
     if (result && result.error) {
       Alert.alert(result.msg);
     } else {
@@ -71,16 +73,17 @@ const Register = () => {
           )}
         />
 
+        {/* Alterando 'contact' para 'contato' */}
         <Controller
           control={control}
-          name="contact"
+          name="contato" // Alteração aqui
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               placeholder="Contato"
               onChangeText={onChange}
               onBlur={onBlur}
               value={value}
-              errorMessage={errors.contact?.message}
+              errorMessage={errors.contato?.message} // Erro de validação
             />
           )}
         />

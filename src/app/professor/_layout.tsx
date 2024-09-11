@@ -1,20 +1,9 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 
-export default function Layout() {
+export default function ProfessorLayout() {
   return (
-    <View style={styles.container}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-      </Stack>
-    </View>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+    </Stack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-});

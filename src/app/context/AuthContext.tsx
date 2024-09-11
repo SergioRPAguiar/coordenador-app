@@ -2,31 +2,30 @@ import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-// Interface para o usuário
 interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
+  contato: string;  // Adicionado o campo contato
+  professor: boolean;
 }
 
-// Interface do estado de autenticação
 interface AuthState {
   token: string | null;
   authenticated: boolean | null;
   user: User | null;
 }
 
-// Interface das propriedades do AuthContext
 interface AuthProps {
   authState: AuthState;
-  user: User | null;  // Incluindo user na interface AuthProps
-  onRegister: (email: string, password: string) => Promise<any>;
+  user: User | null;
+  onRegister: (name: string, email: string, contact: string, password: string) => Promise<any>;
   onLogin: (email: string, password: string) => Promise<any>;
   onLogout: () => Promise<any>;
 }
 
 const TOKEN_KEY = "my-jwt";
-export const API_URL = "http://localhost:5000";
+export const API_URL = "http://192.168.101.9:3000";  // URL da API
 const AuthContext = createContext<AuthProps | undefined>(undefined);
 
 export const useAuth = () => {
@@ -46,60 +45,63 @@ export const AuthProvider = ({ children }: any) => {
 
   useEffect(() => {
     const loadToken = async () => {
-      const token = await SecureStore.getItemAsync(TOKEN_KEY);
-      console.log("stored token", token);
-
-      if (token) {
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        const userInfo = await fetchUserInfo(token);
-        setAuthState({
-          token,
-          authenticated: true,
-          user: userInfo,
-        });
+      try {
+        const token = await SecureStore.getItemAsync(TOKEN_KEY);  // Carregando o token do SecureStore
+        if (token) {
+          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+          const userInfo = await fetchUserInfo(token);  // Buscando informações do usuário
+          setAuthState({
+            token,
+            authenticated: true,
+            user: userInfo,
+          });
+        } else {
+          setAuthState({ token: null, authenticated: false, user: null });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar o token:", error);
+        setAuthState({ token: null, authenticated: false, user: null });
       }
     };
+  
     loadToken();
   }, []);
 
   const fetchUserInfo = async (token: string): Promise<User | null> => {
     try {
-      const response = await axios.get(`${API_URL}/auth/me`);
-      return response.data.user;
+      const response = await axios.get(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data;  // Retornando os dados do usuário
     } catch (e) {
       console.error("Erro ao buscar informações do usuário:", e);
       return null;
     }
   };
 
-  const register = async (email: string, password: string) => {
+  const register = async (name: string, email: string, contato: string, password: string) => {
     try {
-      const result = await axios.post(`${API_URL}/users`, { email, password });
+      const result = await axios.post(`${API_URL}/auth/register`, {
+        name, email, contato, password
+      });
       return result;
     } catch (e) {
-      const errorMsg = (e as any).response?.data?.message || "Erro ao registrar. Por favor, tente novamente.";
+      const errorMsg = (e as any).response?.data?.message || "Erro ao registrar.";
       return { error: true, msg: `Falha no registro: ${errorMsg}` };
     }
   };
 
   const login = async (email: string, password: string) => {
     try {
-      const result = await axios.post(`${API_URL}/auth`, { email, password });
-
-      const userInfo = await fetchUserInfo(result.data.token);
-
-      setAuthState({
-        token: result.data.token,
-        authenticated: true,
-        user: userInfo,
-      });
-
-      axios.defaults.headers.common["Authorization"] = `Bearer ${result.data.token}`;
-      await SecureStore.setItemAsync(TOKEN_KEY, result.data.token);
-
+      const result = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const token = result.data.access_token;  // Obtendo o token JWT
+      if (!token) throw new Error("Token JWT não retornado.");
+      await SecureStore.setItemAsync(TOKEN_KEY, token);  // Salvando o token
+      const userInfo = await fetchUserInfo(token);
+      setAuthState({ token, authenticated: true, user: userInfo });
       return result;
     } catch (e) {
-      const errorMsg = (e as any).response?.data?.message || "Erro ao fazer login. Por favor, tente novamente.";
+      const errorMsg = (e as any).response?.data?.message || "Erro ao fazer login.";
       return { error: true, msg: `Falha no login: ${errorMsg}` };
     }
   };
@@ -108,13 +110,9 @@ export const AuthProvider = ({ children }: any) => {
     try {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
       delete axios.defaults.headers.common["Authorization"];
-      setAuthState({
-        token: null,
-        authenticated: false,
-        user: null,
-      });
+      setAuthState({ token: null, authenticated: false, user: null });
     } catch (e) {
-      console.log("Erro ao sair:", e);
+      console.error("Erro ao sair:", e);
     }
   };
 
@@ -122,7 +120,7 @@ export const AuthProvider = ({ children }: any) => {
     <AuthContext.Provider
       value={{
         authState,
-        user: authState.user,  // Aqui está o user sendo passado no contexto
+        user: authState.user,
         onRegister: register,
         onLogin: login,
         onLogout: logout,

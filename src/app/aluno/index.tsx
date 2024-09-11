@@ -1,37 +1,45 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import ProximaReuniaoAluno from '@/components/ProximaReuniaoAluno';
 import Calendario from '@/components/Calendario';
-import { theme } from '@/theme';
+import { useAuth } from '@/app/context/AuthContext';
 
 const PainelAluno = () => {
-  const proximaReuniao = '15/08/2024, 10:00 AM';
+  const { onLogout } = useAuth();
 
   const components = [
-    { key: 'ProximaReuniaoAluno', title: 'Próxima Reunião', component: <ProximaReuniaoAluno proximaReuniao={proximaReuniao} /> },
-    { key: 'Calendario', title: 'Calendário', component: <Calendario /> },
+    { key: 'ProximaReuniaoAluno', title: 'Próxima Reunião', component: <ProximaReuniaoAluno /> },
+    { key: 'Calendario', title: 'Calendário', component: <Calendario isProfessor={false} /> },
   ];
 
   return (
-    <FlatList
-      data={components}
-      keyExtractor={(item) => item.key}
-      renderItem={({ item }) => (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{item.title}</Text>
-          {item.component}
-        </View>
-      )}
-      contentContainerStyle={styles.container}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={components}
+        keyExtractor={(item) => item.key}
+        renderItem={({ item }) => (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{item.title}</Text>
+            {item.component}
+          </View>
+        )}
+        contentContainerStyle={styles.contentContainer}
+      />
+      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+        <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: '#fff',
     paddingVertical: 10,
+  },
+  contentContainer: {
+    flexGrow: 1,
   },
   section: {
     paddingHorizontal: 20,
@@ -41,6 +49,19 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+  },
+  logoutButton: {
+    backgroundColor: '#ff4d4d',
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    margin: 20,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

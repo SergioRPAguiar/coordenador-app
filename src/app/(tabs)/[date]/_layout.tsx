@@ -1,14 +1,14 @@
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
-import { View } from "react-native-reanimated/lib/typescript/Animated";
+import { useLocalSearchParams } from 'expo-router';
 
-export default function RootTabs(){
+export default function RootTabs() {
+  const { date } = useLocalSearchParams();
 
-    return(
-        <Tabs>
-            <Tabs.Screen name="manha"></Tabs.Screen>
-            <Tabs.Screen name="tarde"></Tabs.Screen>
-            <Tabs.Screen name="noite"></Tabs.Screen>
-        </Tabs>
-    )
+  return (
+    <Tabs>
+      <Tabs.Screen name="manha" />
+      <Tabs.Screen name="tarde" />
+      <Tabs.Screen name="noite" />
+    </Tabs>
+  );
 }
