@@ -1,15 +1,23 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import ProximaReuniao from '@/components/ProximaReuniao';
 import Calendario from '@/components/Calendario';
 import { useAuth } from '@/app/context/AuthContext';
+import { useFocusEffect } from '@react-navigation/native'; // Usar hook para detectar o foco da tela
 
 const Painel = () => {
-  const { onLogout } = useAuth();  // Contexto de autenticação para logout
+  const { onLogout } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      // Código para atualizar dados quando voltar à tela do Painel
+      console.log('Tela de Painel voltou a ficar em foco.');
+    }, [])
+  );
 
   const components = [
     { key: 'ProximaReuniao', component: <ProximaReuniao /> },
-    { key: 'Calendario', title: 'Calendário', component: <Calendario isProfessor={true} /> },  // Componente com isProfessor=true
+    { key: 'Calendario', title: 'Calendário', component: <Calendario isProfessor={true} /> },
   ];
 
   return (
@@ -39,7 +47,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   logoutButton: {
-    backgroundColor: '#ff4d4d', // Cor de fundo para o botão
+    backgroundColor: '#ff4d4d',
     padding: 15,
     alignItems: 'center',
     justifyContent: 'center',

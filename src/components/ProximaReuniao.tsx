@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useAuth } from '@/app/context/AuthContext';
-import { useRouter } from 'expo-router'; // Importa o useRouter para navegação no Expo Router
+import { useRouter } from 'expo-router';
+import axios from 'axios';
+import { API_URL } from '@/app/context/AuthContext';  // Importar a URL da API
 
-const ProximaReuniao = () => {
-  const { user } = useAuth();
-  const [proximaReuniao, setProximaReuniao] = useState<{ date: string; time: string } | null>(null);
-  const router = useRouter(); // Usa o hook useRouter para navegação
+const ProximaReuniaoProfessor = () => {
+  const [proximaReuniao, setProximaReuniao] = useState<{ date: string; timeSlot: string } | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProximaReuniao = async () => {
-      const response = await new Promise<{ data: { date: string; time: string } | null }>((resolve) =>
-        setTimeout(() => resolve({ data: { date: '2024-09-15', time: '10:00' } }), 1000)
-      );
-      setProximaReuniao(response.data);
+      try {
+        const response = await axios.get(`${API_URL}/meeting/nextForProfessor`);
+        if (response.data) {
+          setProximaReuniao(response.data);
+        } else {
+          setProximaReuniao(null);  // Nenhuma reunião encontrada
+        }
+      } catch (error) {
+        console.error('Erro ao buscar a próxima reunião do professor:', error);
+        setProximaReuniao(null);
+      }
     };
-
+  
     fetchProximaReuniao();
-  }, [user]);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -27,7 +34,7 @@ const ProximaReuniao = () => {
         </View>
         <View style={styles.dateContainer}>
           <Text style={styles.info}>
-            {proximaReuniao ? `${proximaReuniao.date}\nàs ${proximaReuniao.time}` : '-'}
+            {proximaReuniao ? `${proximaReuniao.date}\nàs ${proximaReuniao.timeSlot}` : '—'}
           </Text>
         </View>
         <TouchableOpacity
@@ -87,4 +94,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProximaReuniao;
+export default ProximaReuniaoProfessor;

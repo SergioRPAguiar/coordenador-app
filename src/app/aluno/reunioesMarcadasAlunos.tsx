@@ -1,28 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
-import { useAuth } from '@/app/context/AuthContext';
+import { View, Text, StyleSheet, TextInput, Alert, TouchableOpacity } from 'react-native';
+import { useAuth } from '@/app/context/AuthContext'; // Importa o contexto de autenticação
 import axios from 'axios';
-import { API_URL } from '@/app/context/AuthContext';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
+import { API_URL } from '@/app/context/AuthContext'; // Importa a URL base da API
 import { router } from 'expo-router';
-
-// Extende dayjs para suportar fuso horário
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 interface Reuniao {
   _id: string;
   date: string;
   timeSlot: string;
   reason: string;
-  canceled?: boolean; // Propriedade opcional
-  cancelReason?: string; // Propriedade opcional para o motivo do cancelamento
+  canceled?: boolean;  // Propriedade opcional
+  cancelReason?: string;  // Propriedade opcional para o motivo do cancelamento
 }
 
-const ReunioesMarcadas = () => {
-  const { authState } = useAuth();
+const ReunioesMarcadasAlunos = () => {
+  const { authState } = useAuth(); // Pega informações de autenticação do aluno
   const [reunioes, setReunioes] = useState<Reuniao[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,50 +24,52 @@ const ReunioesMarcadas = () => {
 
   useEffect(() => {
     const fetchReunioes = async () => {
+      if (!authState?.user || !authState?.token) {
+        setError('Usuário não autenticado.');
+        setLoading(false);
+        return;
+      }
+  
       try {
-        if (authState.user && authState.user._id) {
-          console.log('Buscando todas as reuniões futuras para o professor:', authState.user._id);
-
-          const response = await axios.get(`${API_URL}/meeting/allFutureForProfessor`);
-          console.log('Resposta da API com todas as reuniões:', response.data);
-
-          let reunioesData: Reuniao[] = [];
-
-          if (Array.isArray(response.data)) {
-            reunioesData = response.data;
-          } else if (response.data && typeof response.data === 'object') {
-            reunioesData = [response.data];
-          }
-
-          const filteredReunioes = reunioesData.filter((reuniao) => !reuniao.canceled);
-          setReunioes(filteredReunioes);
-        }
-      } catch (error) {
-        console.error('Erro ao buscar reuniões:', error);
-        setError('Erro ao buscar reuniões');
+        const response = await axios.get(`${API_URL}/meeting/allForStudent`, {
+          params: {
+            userId: authState.user._id,
+          },
+          headers: {
+            Authorization: `Bearer ${authState.token}`,
+          },
+        });
+        setReunioes(response.data);
+      } catch (err) {
+        setError('Erro ao carregar reuniões.');
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchReunioes();
   }, [authState]);
+  
 
   const handleCancelar = async () => {
     if (!motivoCancelamento.trim()) {
-      alert('Por favor, insira o motivo do cancelamento.');
+      Alert.alert('Por favor, insira o motivo do cancelamento.');
       return;
     }
 
     try {
-      await axios.patch(`${API_URL}/meeting/${cancelarReuniaoId}/cancel`, { reason: motivoCancelamento });
+      await axios.patch(`${API_URL}/meeting/${cancelarReuniaoId}/cancel`, { reason: motivoCancelamento }, {
+        headers: {
+          Authorization: `Bearer ${authState.token}`,
+        },
+      });
       setReunioes((prevReunioes) => prevReunioes.filter((reuniao) => reuniao._id !== cancelarReuniaoId));
-      alert('Reunião cancelada com sucesso.');
+      Alert.alert('Reunião cancelada com sucesso.');
       setCancelarReuniaoId(null);
       setMotivoCancelamento('');
     } catch (error) {
       console.error('Erro ao cancelar a reunião:', error);
-      alert('Erro ao cancelar a reunião.');
+      Alert.alert('Erro ao cancelar a reunião.');
     }
   };
 
@@ -91,9 +86,9 @@ const ReunioesMarcadas = () => {
       {reunioes.length > 0 ? (
         reunioes.map((reuniao) => (
           <View key={reuniao._id} style={styles.reuniaoContainer}>
-            <Text>Data: {reuniao.date}</Text>
-            <Text>Hora: {reuniao.timeSlot}</Text>
-            <Text>Motivo: {reuniao.reason}</Text>
+            <Text style={styles.label}>Data: {reuniao.date}</Text>
+            <Text style={styles.label}>Hora: {reuniao.timeSlot}</Text>
+            <Text style={styles.label}>Motivo: {reuniao.reason}</Text>
 
             {cancelarReuniaoId === reuniao._id ? (
               <>
@@ -118,9 +113,9 @@ const ReunioesMarcadas = () => {
           </View>
         ))
       ) : (
-        <Text>Sem reuniões futuras marcadas</Text>
+        <Text style={styles.noMeetingsText}>Sem reuniões futuras marcadas</Text>
       )}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/professor')}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/aluno')}>
         <Text style={styles.buttonText}>Voltar ao Calendário</Text>
       </TouchableOpacity>
     </View>
@@ -131,20 +126,27 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     backgroundColor: '#fff',
+    flex: 1,
   },
   reuniaoContainer: {
     marginBottom: 20,
-    padding: 10,
+    padding: 15,
     borderColor: '#ddd',
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 10,
+    backgroundColor: '#f9f9f9',
+  },
+  label: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 5,
   },
   input: {
     borderColor: '#ccc',
     borderWidth: 1,
     padding: 10,
     marginBottom: 10,
-    borderRadius: 5,
+    borderRadius: 8,
   },
   confirmButton: {
     backgroundColor: '#28a745',
@@ -171,6 +173,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  noMeetingsText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
 });
 
-export default ReunioesMarcadas;
+export default ReunioesMarcadasAlunos;

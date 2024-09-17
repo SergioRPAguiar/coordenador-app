@@ -1,21 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAuth } from '@/app/context/AuthContext';
-import { useRouter } from 'expo-router'; // Usando Expo Router
-import { theme } from '@/theme'; // Importando o tema
+import { useRouter } from 'expo-router';
+import axios from 'axios';  // Importar axios para fazer a requisição
+import { API_URL } from '@/app/context/AuthContext';  // Importar a URL da API
+import { format } from 'date-fns';  // Biblioteca para formatar a data
+import { ptBR } from 'date-fns/locale';  // Localização para data em português
 
 const ProximaReuniaoAluno = () => {
   const { authState } = useAuth();
   const [proximaReuniao, setProximaReuniao] = useState<string | null>(null);
-  const router = useRouter(); // Hook de navegação
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProximaReuniao = async () => {
-      // Simulação de chamada API
-      const response = await new Promise<{ data: string | null }>((resolve) =>
-        setTimeout(() => resolve({ data: '2024-09-20' }), 1000)
-      );
-      setProximaReuniao(response.data);
+      try {
+        // Verifica se o usuário está autenticado e se tem um userId válido
+        if (authState.user && authState.user._id) {
+          const response = await axios.get(`${API_URL}/meeting/next`, {
+            params: { userId: authState.user._id },  // Passa o userId para a API
+          });
+
+          if (response.data) {
+            const { date, timeSlot } = response.data;
+
+            // Formata a data para o padrão dd/mm/aaaa
+            const formattedDate = format(new Date(date), 'dd/MM/yyyy', {
+              locale: ptBR,
+            });
+
+            setProximaReuniao(`${formattedDate} às ${timeSlot}`);
+          } else {
+            setProximaReuniao(null); // Se não houver reunião
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar a próxima reunião:', error);
+        setProximaReuniao(null); // Se houver erro, não mostra nenhuma reunião
+      }
     };
 
     fetchProximaReuniao();
@@ -24,10 +46,12 @@ const ProximaReuniaoAluno = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Próxima Reunião</Text>
-      <Text style={styles.reuniao}>{proximaReuniao ? proximaReuniao : '—'}</Text>
+      <Text style={styles.reuniao}>
+        {proximaReuniao ? proximaReuniao : '—'}
+      </Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push('/aluno/reunioesMarcadasAluno')} // Navegar para a página de reuniões do aluno
+        onPress={() => router.push('/aluno/reunioesMarcadasAlunos')}
       >
         <Text style={styles.buttonText}>Reuniões Marcadas</Text>
       </TouchableOpacity>
@@ -44,7 +68,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between', // Alinha itens nas extremidades
+    justifyContent: 'space-between',
   },
   title: {
     fontSize: 18,
@@ -55,17 +79,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginVertical: 10,
     textAlign: 'center',
-    flex: 2, // Permite que a data ocupe o espaço central
+    flex: 2,
   },
   button: {
-    backgroundColor: '#008739', // Use a cor do tema ou cor padrão
+    backgroundColor: '#008739',
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    flex: 1, // Mantém o botão pequeno e ajustado
-    alignSelf: 'flex-end', // Posiciona o botão à direita
+    flex: 1,
+    alignSelf: 'flex-end',
   },
   buttonText: {
     color: '#fff',
