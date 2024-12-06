@@ -9,17 +9,15 @@ import timezone from 'dayjs/plugin/timezone';
 import { router } from 'expo-router';
 import Botao from '@/components/Botao';
 
-// Extende dayjs para suportar fuso horário
 dayjs.extend(utc);
 dayjs.extend(timezone);
-
 interface Reuniao {
   _id: string;
   date: string;
   timeSlot: string;
   reason: string;
-  canceled?: boolean; // Propriedade opcional
-  cancelReason?: string; // Propriedade opcional para o motivo do cancelamento
+  canceled?: boolean;
+  cancelReason?: string;
 }
 
 const ReunioesMarcadas = () => {
@@ -68,7 +66,6 @@ const ReunioesMarcadas = () => {
     }
   
     try {
-      // Chamada à API para cancelar a reunião e enviar o e-mail
       await axios.patch(`${API_URL}/meeting/${cancelarReuniaoId}/cancel`, { reason: motivoCancelamento });
       setReunioes((prevReunioes) => prevReunioes.filter((reuniao) => reuniao._id !== cancelarReuniaoId));
       alert('Reunião cancelada com sucesso. O aluno será notificado por e-mail.');
@@ -202,7 +199,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#ddd',
   },
   scrollViewContent: {
-    paddingBottom: 20, // Evita que o último elemento fique colado ao final da tela
+    paddingBottom: 20,
   },
 });
 

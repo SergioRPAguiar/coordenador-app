@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
-import axios from 'axios'; // Certifique-se de importar o axios
-import { API_URL } from '@/app/context/AuthContext'; // Certifique-se de importar a API_URL
+import axios from 'axios';
+import { API_URL } from '@/app/context/AuthContext';
 import Botao from './Botao';
 
 const HorariosDisponiveis = ({ horarios, isProfessor, selectedDate }: { horarios: { [key: string]: string[] }, isProfessor: boolean, selectedDate: string }) => {
@@ -14,7 +14,7 @@ const HorariosDisponiveis = ({ horarios, isProfessor, selectedDate }: { horarios
       const response = await axios.post(url, {
         date: selectedDate,
         time: selectedHorario,
-        motivo: isProfessor ? undefined : motivo, // Motivo é requerido apenas para alunos
+        motivo: isProfessor ? undefined : motivo,
       });
       console.log("Horário Confirmado:", response.data);
     } catch (error) {
@@ -25,7 +25,6 @@ const HorariosDisponiveis = ({ horarios, isProfessor, selectedDate }: { horarios
   return (
     <View>
       <Text>Horários Disponíveis</Text>
-      {/* Lógica para exibir os horários e permitir a seleção */}
       {Object.keys(horarios).map((time) => (
         <TouchableOpacity key={time} onPress={() => setSelectedHorario(time)}>
           <Text>{time}</Text>

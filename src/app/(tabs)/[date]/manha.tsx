@@ -9,8 +9,8 @@ import Botao from '@/components/Botao';
 
 const Manha = () => {
   const router = useRouter();
-  const { date } = useLocalSearchParams(); // Captura o parâmetro da URL
-  const { selectedDate, setSelectedDate } = useDate(); // Usa a data global
+  const { date } = useLocalSearchParams(); 
+  const { selectedDate, setSelectedDate } = useDate(); 
   const [horarios, setHorarios] = useState([
     { time: '07:00 - 07:15', available: false },
     { time: '07:15 - 07:30', available: false },
@@ -37,14 +37,12 @@ const Manha = () => {
   const { authState } = useAuth();
   const token = authState.token;
 
-  // Atualiza a data selecionada assim que o parâmetro 'date' é carregado da URL
   useEffect(() => {
     if (date) {
-      setSelectedDate(date as string); // Atualiza o selectedDate do contexto com o valor da URL
+      setSelectedDate(date as string); 
     }
   }, [date]);
 
-  // Função para buscar os horários disponíveis na data selecionada
   const fetchHorarios = async (selectedDate: string) => {
     try {
       const response = await axios.get(`${API_URL}/schedule/available/${selectedDate}`, {
@@ -67,14 +65,12 @@ const Manha = () => {
     }
   };
 
-  // Chama a função de buscar horários quando a data selecionada muda
   useEffect(() => {
     if (selectedDate) {
-      fetchHorarios(selectedDate); // Busca os horários usando a data atualizada do contexto
+      fetchHorarios(selectedDate); 
     }
   }, [selectedDate]);
 
-  // Função para alternar a disponibilidade de um horário
   const toggleDisponibilidade = async (index: number) => {
     const newHorarios = [...horarios];
     newHorarios[index].available = !newHorarios[index].available;
@@ -84,7 +80,7 @@ const Manha = () => {
       await axios.post(
         `${API_URL}/schedule`,
         {
-          date: selectedDate, // Envia a data como string
+          date: selectedDate, 
           timeSlot: newHorarios[index].time,
           available: newHorarios[index].available,
         },
@@ -119,7 +115,6 @@ const Manha = () => {
         ))}
       </ScrollView>
 
-      {/* Botão fixo no rodapé */}
       <View style={styles.footerContainer}>
         <Botao title="Voltar para o Calendário" onPress={() => router.replace('/professor')} />
       </View>
@@ -134,7 +129,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContainer: {
     padding: 20,
-    paddingBottom: 5, // Espaço para garantir que o conteúdo não sobreponha o botão
+    paddingBottom: 5,
   },
   headerText: {
     paddingTop: 30,

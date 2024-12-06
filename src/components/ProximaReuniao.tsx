@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
-import { API_URL } from '@/app/context/AuthContext';  // Importar a URL da API
+import { API_URL } from '@/app/context/AuthContext'; 
 
 const ProximaReuniaoProfessor = () => {
   const [proximaReuniao, setProximaReuniao] = useState<{ date: string; timeSlot: string } | null>(null);
@@ -15,7 +15,7 @@ const ProximaReuniaoProfessor = () => {
         if (response.data) {
           setProximaReuniao(response.data);
         } else {
-          setProximaReuniao(null);  // Nenhuma reunião encontrada
+          setProximaReuniao(null);
         }
       } catch (error) {
         setProximaReuniao(null);
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 2,
-    backgroundColor: '#008739', // Cor do tema ou personalizada
+    backgroundColor: '#008739',
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 5,

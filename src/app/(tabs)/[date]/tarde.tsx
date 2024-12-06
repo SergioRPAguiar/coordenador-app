@@ -41,14 +41,12 @@ const Tarde = () => {
     { time: '17:45 - 18:00', available: false },
   ]);
 
-  // Atualiza a data selecionada assim quando o parâmetro 'date' é carregado da URL
   useEffect(() => {
     if (date) {
-      setSelectedDate(date as string); // Atualiza o selectedDate do contexto com o valor da URL
+      setSelectedDate(date as string);
     }
   }, [date]);
 
-  // Função para buscar os horários disponíveis na data selecionada
   const fetchHorarios = async (selectedDate: string) => {
     try {
       const response = await axios.get(`${API_URL}/schedule/available/${selectedDate}`, {
@@ -71,14 +69,12 @@ const Tarde = () => {
     }
   };
 
-  // Chama a função de buscar horários quando a data selecionada muda
   useEffect(() => {
     if (selectedDate) {
-      fetchHorarios(selectedDate); // Busca os horários usando a data atualizada do contexto
+      fetchHorarios(selectedDate); 
     }
   }, [selectedDate]);
 
-  // Função para alternar a disponibilidade de um horário
   const toggleDisponibilidade = async (index: number) => {
     const newHorarios = [...horarios];
     newHorarios[index].available = !newHorarios[index].available;
@@ -88,7 +84,7 @@ const Tarde = () => {
       await axios.post(
         `${API_URL}/schedule`,
         {
-          date: selectedDate, // Envia a data como string
+          date: selectedDate,
           timeSlot: newHorarios[index].time,
           available: newHorarios[index].available,
         },
@@ -122,7 +118,6 @@ const Tarde = () => {
         ))}
       </ScrollView>
 
-      {/* Botão fixo no rodapé */}
       <View style={styles.footerContainer}>
         <Botao title="Voltar para o Calendário" onPress={() => router.replace('/professor')} />
       </View>

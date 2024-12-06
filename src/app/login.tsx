@@ -28,7 +28,7 @@ const Login = () => {
       Alert.alert(result.msg);
     } else {
       Alert.alert("Sucesso", "Login bem-sucedido!");
-      router.replace('/'); // Substitui a página atual pela página principal, causando um refresh
+      router.replace('/');
     }
   };
 
@@ -54,7 +54,7 @@ const Login = () => {
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               placeholder="Email"
-              onChangeText={(text) => onChange(text.toLowerCase())} // Força texto para minúsculas
+              onChangeText={(text) => onChange(text.toLowerCase())}
               onBlur={onBlur}
               value={value}
               errorMessage={errors.email?.message}
@@ -69,7 +69,7 @@ const Login = () => {
             <Input
               placeholder="Senha"
               secureTextEntry={true}
-              onChangeText={(text) => onChange(text.toLowerCase())} // Força texto para minúsculas
+              onChangeText={(text) => onChange(text.toLowerCase())}
               onBlur={onBlur}
               value={value}
               errorMessage={errors.password?.message}
@@ -86,7 +86,7 @@ const Login = () => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 50,
+    paddingTop: 100,
     alignItems: "center",
     justifyContent: "flex-start",
     backgroundColor: "#fff",

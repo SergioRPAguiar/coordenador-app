@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native
 import ProximaReuniao from '@/components/ProximaReuniao';
 import Calendario from '@/components/Calendario';
 import { useAuth } from '@/app/context/AuthContext';
-import { useFocusEffect } from '@react-navigation/native'; // Usar hook para detectar o foco da tela
+import { useFocusEffect } from '@react-navigation/native';
 
 const Painel = () => {
   const { onLogout } = useAuth();

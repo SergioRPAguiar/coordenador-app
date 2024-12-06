@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TextInput, Alert, TouchableOpacity } from 'react-native';
-import { useAuth } from '@/app/context/AuthContext'; // Importa o contexto de autenticação
+import { useAuth } from '@/app/context/AuthContext';
 import axios from 'axios';
-import { API_URL } from '@/app/context/AuthContext'; // Importa a URL base da API
+import { API_URL } from '@/app/context/AuthContext';
 import { router } from 'expo-router';
 import Botao from '@/components/Botao';
 
@@ -11,12 +11,12 @@ interface Reuniao {
   date: string;
   timeSlot: string;
   reason: string;
-  canceled?: boolean;  // Propriedade opcional
-  cancelReason?: string;  // Propriedade opcional para o motivo do cancelamento
+  canceled?: boolean;
+  cancelReason?: string;  
 }
 
 const ReunioesMarcadasAlunos = () => {
-  const { authState } = useAuth(); // Pega informações de autenticação do aluno
+  const { authState } = useAuth(); 
   const [reunioes, setReunioes] = useState<Reuniao[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +58,6 @@ const ReunioesMarcadasAlunos = () => {
     }
   
     try {
-      // Chamada à API para cancelar a reunião e enviar o e-mail
       await axios.patch(`${API_URL}/meeting/${cancelarReuniaoId}/cancel`, { reason: motivoCancelamento }, {
         headers: {
           Authorization: `Bearer ${authState.token}`,
@@ -120,7 +119,6 @@ const ReunioesMarcadasAlunos = () => {
         )}
       </ScrollView>
 
-      {/* Botão fixo no rodapé */}
       <View style={styles.footerContainer}>
         <Botao title="Voltar para o Calendário" onPress={() => router.replace('/aluno')} />
       </View>
@@ -190,7 +188,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 10,
-    backgroundColor: '#fff', // Fundo branco para suavizar com o fundo do botão
+    backgroundColor: '#fff',
     borderTopWidth: 0,
     borderTopColor: '#ddd',
     alignItems: 'center',
@@ -205,7 +203,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   scrollViewContent: {
-    paddingBottom: 50, // Ajusta para que o conteúdo não sobreponha o botão fixo
+    paddingBottom: 50,
   },
 });
 

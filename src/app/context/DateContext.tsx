@@ -1,7 +1,7 @@
 import { createContext, useState, useContext, ReactNode } from "react";
 
 interface DateContextProps {
-  selectedDate: string; // Usamos string (YYYY-MM-DD) aqui
+  selectedDate: string;
   setSelectedDate: (date: string) => void;
 }
 
@@ -16,7 +16,7 @@ export const useDate = () => {
 };
 
 export const DateProvider = ({ children }: { children: ReactNode }) => {
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]); // Data atual como padrão
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   return (
     <DateContext.Provider value={{ selectedDate, setSelectedDate }}>

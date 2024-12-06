@@ -4,7 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '@/app/context/AuthContext';
-import { useRouter } from 'expo-router'; // Importando o useRouter
+import { useRouter } from 'expo-router';
 import { theme } from '@/theme';
 import Botao from '@/components/Botao';
 import Input from '@/components/Input';
@@ -22,7 +22,7 @@ const Register = () => {
   });
 
   const { onRegister } = useAuth();
-  const router = useRouter(); // Adicionando o hook de roteamento
+  const router = useRouter();
 
   const handleRegister = async (data: { name: string, email: string, contato: string, password: string }) => {
     const result = await onRegister!(data.name, data.email, data.contato, data.password);
@@ -30,7 +30,7 @@ const Register = () => {
       Alert.alert(result.msg);
     } else {
       Alert.alert("Sucesso", "Cadastro bem-sucedido!");
-      router.push('/login'); // Redirecionando para a página de login
+      router.push('/login');
     }
   };
 

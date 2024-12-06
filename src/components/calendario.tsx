@@ -3,16 +3,16 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/app/context/AuthContext';
-import { useDate } from '@/app/context/DateContext'; // Importa o DateContext para gerenciar a data globalmente
+import { useDate } from '@/app/context/DateContext';
 
 const Calendario = ({ isProfessor }: { isProfessor: boolean }) => {
   const router = useRouter();
   const { user } = useAuth();
-  const { selectedDate, setSelectedDate } = useDate(); // Usa o contexto para armazenar a data selecionada
+  const { selectedDate, setSelectedDate } = useDate();
 
   const handleDayPress = (day: any) => {
     const selectedDate = day.dateString;
-    setSelectedDate(selectedDate); // Atualiza a data no contexto global
+    setSelectedDate(selectedDate);
 
     if (isProfessor) {
       console.log(selectedDate);
@@ -30,7 +30,7 @@ const Calendario = ({ isProfessor }: { isProfessor: boolean }) => {
         markedDates={{
           [selectedDate]: { selected: true, selectedColor: '#00adf5' },
         }}
-        minDate={new Date().toISOString().split('T')[0]} // Evita selecionar datas passadas
+        minDate={new Date().toISOString().split('T')[0]}
       />
     </View>
   );

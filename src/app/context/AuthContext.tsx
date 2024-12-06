@@ -7,7 +7,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  contato: string;  // Adicionado o campo contato
+  contato: string; 
   professor: boolean;
 }
 
@@ -26,7 +26,7 @@ interface AuthProps {
 }
 
 const TOKEN_KEY = "my-jwt";
-export const API_URL = "http://192.168.101.14:3000";  // URL da API
+export const API_URL = "http://192.168.101.14:3000";
 const AuthContext = createContext<AuthProps | undefined>(undefined);
 
 export const useAuth = () => {
@@ -47,10 +47,10 @@ export const AuthProvider = ({ children }: any) => {
   useEffect(() => {
     const loadToken = async () => {
       try {
-        const token = await SecureStore.getItemAsync(TOKEN_KEY);  // Carregando o token do SecureStore
+        const token = await SecureStore.getItemAsync(TOKEN_KEY);
         if (token) {
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-          const userInfo = await fetchUserInfo(token);  // Buscando informações do usuário
+          const userInfo = await fetchUserInfo(token);
           setAuthState({
             token,
             authenticated: true,
@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: any) => {
       const response = await axios.get(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data;  // Retornando os dados do usuário
+      return response.data;
     } catch (e) {
       console.error("Erro ao buscar informações do usuário:", e);
       return null;
@@ -95,9 +95,9 @@ export const AuthProvider = ({ children }: any) => {
   const login = async (email: string, password: string) => {
     try {
       const result = await axios.post(`${API_URL}/auth/login`, { email, password });
-      const token = result.data.access_token;  // Obtendo o token JWT
+      const token = result.data.access_token;
       if (!token) throw new Error("Token JWT não retornado.");
-      await SecureStore.setItemAsync(TOKEN_KEY, token);  // Salvando o token
+      await SecureStore.setItemAsync(TOKEN_KEY, token);
       const userInfo = await fetchUserInfo(token);
       setAuthState({ token, authenticated: true, user: userInfo });
       return result;

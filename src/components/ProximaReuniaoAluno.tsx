@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'expo-router';
-import axios from 'axios';  // Importar axios para fazer a requisição
-import { API_URL } from '@/app/context/AuthContext';  // Importar a URL da API
-import { format } from 'date-fns';  // Biblioteca para formatar a data
-import { ptBR } from 'date-fns/locale';  // Localização para data em português
+import axios from 'axios';
+import { API_URL } from '@/app/context/AuthContext';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const ProximaReuniaoAluno = () => {
   const { authState } = useAuth();
@@ -15,27 +15,24 @@ const ProximaReuniaoAluno = () => {
   useEffect(() => {
     const fetchProximaReuniao = async () => {
       try {
-        // Verifica se o usuário está autenticado e se tem um userId válido
         if (authState.user && authState.user._id) {
           const response = await axios.get(`${API_URL}/meeting/next`, {
-            params: { userId: authState.user._id },  // Passa o userId para a API
+            params: { userId: authState.user._id }, 
           });
 
           if (response.data) {
             const { date, timeSlot } = response.data;
-
-            // Formata a data para o padrão dd/mm/aaaa
             const formattedDate = format(new Date(date), 'dd/MM/yyyy', {
               locale: ptBR,
             });
 
             setProximaReuniao(`${formattedDate} às ${timeSlot}`);
           } else {
-            setProximaReuniao(null); // Se não houver reunião
+            setProximaReuniao(null); 
           }
         }
       } catch (error) {
-        setProximaReuniao(null); // Se houver erro, não mostra nenhuma reunião
+        setProximaReuniao(null); 
       }
     };
 
