@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TextInput, Alert, TouchableOpacity } from 'react-native';
 import { useAuth } from '@/app/context/AuthContext'; // Importa o contexto de autenticação
 import axios from 'axios';
 import { API_URL } from '@/app/context/AuthContext'; // Importa a URL base da API
 import { router } from 'expo-router';
+import Botao from '@/components/Botao';
 
 interface Reuniao {
   _id: string;
@@ -49,27 +50,27 @@ const ReunioesMarcadasAlunos = () => {
   
     fetchReunioes();
   }, [authState]);
-  
 
   const handleCancelar = async () => {
     if (!motivoCancelamento.trim()) {
       Alert.alert('Por favor, insira o motivo do cancelamento.');
       return;
     }
-
+  
     try {
+      // Chamada à API para cancelar a reunião e enviar o e-mail
       await axios.patch(`${API_URL}/meeting/${cancelarReuniaoId}/cancel`, { reason: motivoCancelamento }, {
         headers: {
           Authorization: `Bearer ${authState.token}`,
         },
       });
       setReunioes((prevReunioes) => prevReunioes.filter((reuniao) => reuniao._id !== cancelarReuniaoId));
-      Alert.alert('Reunião cancelada com sucesso.');
+      Alert.alert('Reunião cancelada com sucesso. O professor será notificado por e-mail.');
       setCancelarReuniaoId(null);
       setMotivoCancelamento('');
     } catch (error) {
       console.error('Erro ao cancelar a reunião:', error);
-      Alert.alert('Erro ao cancelar a reunião.');
+      Alert.alert('Erro ao cancelar a reunião. Verifique sua conexão ou tente novamente.');
     }
   };
 
@@ -83,41 +84,46 @@ const ReunioesMarcadasAlunos = () => {
 
   return (
     <View style={styles.container}>
-      {reunioes.length > 0 ? (
-        reunioes.map((reuniao) => (
-          <View key={reuniao._id} style={styles.reuniaoContainer}>
-            <Text style={styles.label}>Data: {reuniao.date}</Text>
-            <Text style={styles.label}>Hora: {reuniao.timeSlot}</Text>
-            <Text style={styles.label}>Motivo: {reuniao.reason}</Text>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        {reunioes.length > 0 ? (
+          reunioes.map((reuniao) => (
+            <View key={reuniao._id} style={styles.reuniaoContainer}>
+              <Text style={styles.label}>Data: {reuniao.date}</Text>
+              <Text style={styles.label}>Hora: {reuniao.timeSlot}</Text>
+              <Text style={styles.label}>Motivo: {reuniao.reason}</Text>
+  
+              {cancelarReuniaoId === reuniao._id ? (
+                <>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Motivo do cancelamento"
+                    value={motivoCancelamento}
+                    onChangeText={setMotivoCancelamento}
+                    multiline
+                  />
+                  <TouchableOpacity style={styles.confirmButton} onPress={handleCancelar}>
+                    <Text style={styles.buttonText}>Confirmar cancelamento</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.cancelButton} onPress={() => setCancelarReuniaoId(null)}>
+                    <Text style={styles.buttonText}>Cancelar</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <TouchableOpacity style={styles.uncheckButton} onPress={() => setCancelarReuniaoId(reuniao._id)}>
+                  <Text style={styles.buttonText}>Desmarcar reunião</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noMeetingsText}>Sem reuniões futuras marcadas</Text>
+        )}
+      </ScrollView>
 
-            {cancelarReuniaoId === reuniao._id ? (
-              <>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Motivo do cancelamento"
-                  value={motivoCancelamento}
-                  onChangeText={setMotivoCancelamento}
-                />
-                <TouchableOpacity style={styles.confirmButton} onPress={handleCancelar}>
-                  <Text style={styles.buttonText}>Confirmar cancelamento</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton} onPress={() => setCancelarReuniaoId(null)}>
-                  <Text style={styles.buttonText}>Cancelar</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setCancelarReuniaoId(reuniao._id)}>
-                <Text style={styles.buttonText}>Desmarcar reunião</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ))
-      ) : (
-        <Text style={styles.noMeetingsText}>Sem reuniões futuras marcadas</Text>
-      )}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/aluno')}>
-        <Text style={styles.buttonText}>Voltar ao Calendário</Text>
-      </TouchableOpacity>
+      {/* Botão fixo no rodapé */}
+      <View style={styles.footerContainer}>
+        <Botao title="Voltar para o Calendário" onPress={() => router.replace('/aluno')} />
+      </View>
     </View>
   );
 };
@@ -127,47 +133,67 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
     flex: 1,
+    paddingTop: 60,
   },
   reuniaoContainer: {
-    marginBottom: 20,
-    padding: 15,
+    marginBottom: 30,
+    padding: 10,
+    alignItems: 'center',
     borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 10,
-    backgroundColor: '#f9f9f9',
+    borderWidth: 2,
+    borderRadius: 5,
   },
   label: {
     fontSize: 16,
     color: '#333',
-    marginBottom: 5,
+    marginBottom: 3,
   },
   input: {
     borderColor: '#ccc',
+    width: '100%',
+    marginTop: 5,
     borderWidth: 1,
     padding: 10,
     marginBottom: 10,
     borderRadius: 8,
+    alignItems: 'center',
   },
   confirmButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: '#ff4d4d',
+    width: '100%',
+    marginTop: 5,
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 15,
     alignItems: 'center',
-    marginBottom: 10,
   },
   cancelButton: {
-    backgroundColor: '#ff0000',
+    backgroundColor: '#6e6e6e',
+    width: '100%',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 15,
     alignItems: 'center',
     marginBottom: 10,
-  },
-  backButton: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
     marginTop: 10,
+  },
+  uncheckButton: {
+    backgroundColor: '#ff4d4d',
+    width: '100%',
+    padding: 10,
+    borderRadius: 15,
+    alignItems: 'center',
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 10,
+    backgroundColor: '#fff', // Fundo branco para suavizar com o fundo do botão
+    borderTopWidth: 0,
+    borderTopColor: '#ddd',
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
@@ -177,6 +203,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  scrollViewContent: {
+    paddingBottom: 50, // Ajusta para que o conteúdo não sobreponha o botão fixo
   },
 });
 

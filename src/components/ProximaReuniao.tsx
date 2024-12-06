@@ -18,7 +18,6 @@ const ProximaReuniaoProfessor = () => {
           setProximaReuniao(null);  // Nenhuma reunião encontrada
         }
       } catch (error) {
-        console.error('Erro ao buscar a próxima reunião do professor:', error);
         setProximaReuniao(null);
       }
     };
@@ -54,7 +53,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     elevation: 5,
-    marginVertical: 10,
+    marginVertical: 1,
   },
   infoContainer: {
     flexDirection: 'row',

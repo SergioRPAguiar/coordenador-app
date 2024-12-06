@@ -10,7 +10,6 @@ const Painel = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // Código para atualizar dados quando voltar à tela do Painel
       console.log('Tela de Painel voltou a ficar em foco.');
     }, [])
   );
@@ -67,7 +66,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   sectionTitle: {
-    fontSize: 20,
+    textAlign: 'center',
+    fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 10,
   },

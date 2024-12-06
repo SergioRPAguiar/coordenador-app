@@ -35,7 +35,6 @@ const ProximaReuniaoAluno = () => {
           }
         }
       } catch (error) {
-        console.error('Erro ao buscar a próxima reunião:', error);
         setProximaReuniao(null); // Se houver erro, não mostra nenhuma reunião
       }
     };
@@ -65,7 +64,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     elevation: 5,
-    marginVertical: 10,
+    marginVertical: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

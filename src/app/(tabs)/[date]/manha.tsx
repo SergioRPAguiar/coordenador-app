@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Button, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Checkbox } from 'react-native-paper';
 import axios from 'axios';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { API_URL, useAuth } from '@/app/context/AuthContext';
 import { useDate } from '@/app/context/DateContext';
+import Botao from '@/components/Botao';
 
 const Manha = () => {
   const router = useRouter();
@@ -100,46 +101,79 @@ const Manha = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Button title="Voltar para o Calendário" onPress={() => router.back()} />
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+        <Text style={styles.headerText}>Horários da Manhã</Text>
 
-      <Text style={styles.headerText}>Horários da Manhã</Text>
+        <Text style={styles.headerText2}>Data selecionada: {selectedDate}</Text>
 
-      <Text>Data selecionada: {selectedDate}</Text>
+        {horarios.map((horario, index) => (
+          <View key={index} style={styles.horarioContainer}>
+            <Text style={styles.text}>{horario.time}</Text>
+            <Checkbox
+              status={horario.available ? 'checked' : 'unchecked'}
+              onPress={() => toggleDisponibilidade(index)}
+              color={horario.available ? '#008739' : '#ccc'} 
+            />
+          </View>
+        ))}
+      </ScrollView>
 
-      {horarios.map((horario, index) => (
-        <View key={index} style={styles.horarioContainer}>
-          <Text style={styles.text}>{horario.time}</Text>
-          <Checkbox
-            status={horario.available ? 'checked' : 'unchecked'}
-            onPress={() => toggleDisponibilidade(index)}
-          />
-        </View>
-      ))}
-    </ScrollView>
+      {/* Botão fixo no rodapé */}
+      <View style={styles.footerContainer}>
+        <Botao title="Voltar para o Calendário" onPress={() => router.replace('/professor')} />
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  scrollViewContainer: {
     padding: 20,
-    backgroundColor: '#fff',
+    paddingBottom: 5, // Espaço para garantir que o conteúdo não sobreponha o botão
   },
   headerText: {
-    fontSize: 20,
+    paddingTop: 30,
+    fontSize: 30,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 5,
     textAlign: 'center',
+    color: '#008739',
+  },
+  headerText2: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    borderBottomColor: '#7c7c7c', 
+    borderBottomWidth: 1,       
+    paddingBottom: 10,
   },
   horarioContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
+    color: '#fff',
+    padding: 10,
+    borderColor: '#ccc',
+    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderRadius: 8,
   },
   text: {
     fontSize: 18,
+  },
+  footerContainer: {
+    padding: 10,
+    backgroundColor: '#fff', 
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopColor: '#ddd',
   },
 });
 

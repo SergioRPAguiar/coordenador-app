@@ -46,7 +46,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   sectionTitle: {
-    fontSize: 20,
+    textAlign: 'center',
+    fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 10,
   },

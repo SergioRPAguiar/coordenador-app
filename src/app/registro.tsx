@@ -4,15 +4,15 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '@/app/context/AuthContext';
+import { useRouter } from 'expo-router'; // Importando o useRouter
 import { theme } from '@/theme';
 import Botao from '@/components/Botao';
 import Input from '@/components/Input';
 
-// Atualizando o schema com o nome correto do campo 'contato'
 const schema = yup.object({
   name: yup.string().required("Informe o nome"),
   email: yup.string().email("Email inválido").required("Informe o email"),
-  contato: yup.string().required("Informe o contato"), // Aqui é 'contato'
+  contato: yup.string().required("Informe o contato"),
   password: yup.string().min(6, "A senha deve ter pelo menos 6 caracteres").required("Informe a senha"),
 });
 
@@ -22,14 +22,15 @@ const Register = () => {
   });
 
   const { onRegister } = useAuth();
+  const router = useRouter(); // Adicionando o hook de roteamento
 
-  // Garantindo que o 'contato' é passado corretamente
   const handleRegister = async (data: { name: string, email: string, contato: string, password: string }) => {
-    const result = await onRegister!(data.name, data.email, data.contato, data.password); // Incluindo contato
+    const result = await onRegister!(data.name, data.email, data.contato, data.password);
     if (result && result.error) {
       Alert.alert(result.msg);
     } else {
       Alert.alert("Sucesso", "Cadastro bem-sucedido!");
+      router.push('/login'); // Redirecionando para a página de login
     }
   };
 
@@ -73,17 +74,16 @@ const Register = () => {
           )}
         />
 
-        {/* Alterando 'contact' para 'contato' */}
         <Controller
           control={control}
-          name="contato" // Alteração aqui
+          name="contato"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               placeholder="Contato"
               onChangeText={onChange}
               onBlur={onBlur}
               value={value}
-              errorMessage={errors.contato?.message} // Erro de validação
+              errorMessage={errors.contato?.message}
             />
           )}
         />

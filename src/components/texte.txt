@@ -1,4 +1,4 @@
-arquivos Frontend
+chat estou fazendo um app, e me foi pedido para sincronizar a rota de professor com a agenda google como podemos fazer isso aqui esta o caminhos arquivos Frontend
 app/
 ├── (tabs)/
 │   ├── [date]/
@@ -6,31 +6,31 @@ app/
 │      ├── manha.tsx
 │      ├── noite.tsx
 │      ├── tarde.tsx
-├── context/
-│   ├── AuthContext.tsx
 ├── aluno/
-├── (tabs)/
 │   ├── [date]/
 │   └─ ├── _layout.tsx
-│   │  ├── manha.tsx
-│   │  ├── noite.tsx
-│   │  ├── tarde.tsx
-    ├── _layout.tsx
-    ├── index.tsx
+│      ├── horariosDia.tsx 
+│   ├── _layout.tsx
+│   ├── index.tsx
+│   ├── reunioesMarcadasAlunos.tsx
+├── context/
+│   ├── AuthContext.tsx
+│   ├── DateContext.tsx
 ├── professor/
-    ├── _layout.tsx
-    ├── index.tsx
+│   ├── _layout.tsx
+│   ├── index.tsx
+│   ├── reunioesMarcadas.tsx
 ├── _layout.tsx
 ├── index.tsx
 ├── login.tsx
 ├── registro.tsx
 ├── components/
-    ├── Botao.tsx
-    ├── Calendario.tsx
-    ├── HorariosDisponiveis.tsx
-    ├── Input.tsx
-    ├── ProximaReuniao.tsx
-    ├── ProximaReuniaoAluno.tsx
+│   ├── Botao.tsx
+│   ├── Calendario.tsx
+│   ├── HorariosDisponiveis.tsx
+│   ├── Input.tsx
+│   ├── ProximaReuniao.tsx
+│   ├── ProximaReuniaoAluno.tsx
 
 Arquivos backend
 src
@@ -75,82 +75,9 @@ src
 ├── app.module.ts
 ├── app.service.ts
 ├── main.ts
-
-
-vou te mandar todos meus arquivos; ajusteos para funcionar app/_layout.tsx: import React from "react";
-import { Stack } from "expo-router";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import { Button } from "react-native";
-import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_700Bold } from "@expo-google-fonts/poppins";
-import { Slot } from "expo-router";
-
-export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_700Bold,
-  });
-
-  if (!fontsLoaded) {
-    return null;
-  }
-
-  return (
-    <AuthProvider>
-      <StackLayout />
-    </AuthProvider>
-  );
-}
-
-const StackLayout = () => {
-  const { authState, onLogout } = useAuth();
-
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {authState?.authenticated ? (
-        <>
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              headerRight: () => <Button onPress={onLogout} title="Sair" />,
-            }}
-          />
-          <Stack.Screen name="[date]" />
-        </>
-      ) : (
-        <Stack.Screen name="login" options={{ headerTitle: "Login" }} />
-      )}
-      {/* Colocando o Slot aqui para renderizar o conteúdo das telas */}
-      <Slot />
-    </Stack>
-  );
-};
-app/index.tsx: import { useRouter } from "expo-router";
-import { useEffect } from "react";
-import { useAuth } from "./context/AuthContext";
-
-export default function Index() {
-  const { authState } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (authState?.authenticated !== null) {
-      const isProfessor = true; // Placeholder - aqui você ajusta a lógica de verificação
-      if (authState.authenticated) {
-        if (isProfessor) {
-          router.push("/professor/index");
-        } else {
-          router.push("/aluno/index");
-        }
-      } else {
-        router.push("/login");
-      }
-    }
-  }, [authState, router]);
-
-  return null;
-}
-app/login.tsx: import React from 'react';
+Atualmente a minha rota de professor e o seguinte 
+src\app\login.tsx: 
+import React from 'react';
 import { View, Image, StyleSheet, Alert, Text } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -180,6 +107,7 @@ const Login = () => {
       Alert.alert(result.msg);
     } else {
       Alert.alert("Sucesso", "Login bem-sucedido!");
+      router.replace('/'); // Substitui a página atual pela página principal, causando um refresh
     }
   };
 
@@ -270,7 +198,8 @@ const styles = StyleSheet.create({
 });
 
 export default Login;
-app/registro.tsx: import React from 'react';
+src\app\registro.tsx: 
+import React from 'react';
 import { View, Image, StyleSheet, Alert, Text } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -280,10 +209,11 @@ import { theme } from '@/theme';
 import Botao from '@/components/Botao';
 import Input from '@/components/Input';
 
+// Atualizando o schema com o nome correto do campo 'contato'
 const schema = yup.object({
   name: yup.string().required("Informe o nome"),
   email: yup.string().email("Email inválido").required("Informe o email"),
-  contact: yup.string().required("Informe o contato"),
+  contato: yup.string().required("Informe o contato"), // Aqui é 'contato'
   password: yup.string().min(6, "A senha deve ter pelo menos 6 caracteres").required("Informe a senha"),
 });
 
@@ -294,8 +224,9 @@ const Register = () => {
 
   const { onRegister } = useAuth();
 
-  const handleRegister = async (data: { name: string, email: string, contact: string, password: string }) => {
-    const result = await onRegister!(data.email, data.password);
+  // Garantindo que o 'contato' é passado corretamente
+  const handleRegister = async (data: { name: string, email: string, contato: string, password: string }) => {
+    const result = await onRegister!(data.name, data.email, data.contato, data.password); // Incluindo contato
     if (result && result.error) {
       Alert.alert(result.msg);
     } else {
@@ -343,16 +274,17 @@ const Register = () => {
           )}
         />
 
+        {/* Alterando 'contact' para 'contato' */}
         <Controller
           control={control}
-          name="contact"
+          name="contato" // Alteração aqui
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               placeholder="Contato"
               onChangeText={onChange}
               onBlur={onBlur}
               value={value}
-              errorMessage={errors.contact?.message}
+              errorMessage={errors.contato?.message} // Erro de validação
             />
           )}
         />
@@ -413,125 +345,80 @@ const styles = StyleSheet.create({
 });
 
 export default Register;
-app/aluno/_layout.tsx: import React from 'react';
-import { View, StyleSheet } from 'react-native';
+src\app\professor\_layout.tsx:
 import { Stack } from 'expo-router';
 
-export default function Layout() {
+export default function ProfessorLayout() {
   return (
-    <View style={styles.container}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-      </Stack>
-    </View>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+    </Stack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-});
-app/aluno/index.tsx: import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import ProximaReuniaoAluno from '@/components/ProximaReuniaoAluno';
-import Calendario from '@/components/Calendario';
-import { theme } from '@/theme';
-
-const PainelAluno = () => {
-  const proximaReuniao = '15/08/2024, 10:00 AM';
-
-  const components = [
-    { key: 'ProximaReuniaoAluno', title: 'Próxima Reunião', component: <ProximaReuniaoAluno proximaReuniao={proximaReuniao} /> },
-    { key: 'Calendario', title: 'Calendário', component: <Calendario /> },
-  ];
-
-  return (
-    <FlatList
-      data={components}
-      keyExtractor={(item) => item.key}
-      renderItem={({ item }) => (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{item.title}</Text>
-          {item.component}
-        </View>
-      )}
-      contentContainerStyle={styles.container}
-    />
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: '#fff',
-    paddingVertical: 10,
-  },
-  section: {
-    paddingHorizontal: 20,
-    marginVertical: 10,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-});
-
-export default PainelAluno;
-app/professor/_layout.tsx: import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Stack } from 'expo-router';
-
-export default function Layout() {
-  return (
-    <View style={styles.container}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-      </Stack>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-});
- app/professor/index.tsx: import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+src\app\professor\index.tsx:
+import React, { useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import ProximaReuniao from '@/components/ProximaReuniao';
 import Calendario from '@/components/Calendario';
-import { theme } from '@/theme';
+import { useAuth } from '@/app/context/AuthContext';
+import { useFocusEffect } from '@react-navigation/native'; // Usar hook para detectar o foco da tela
 
 const Painel = () => {
+  const { onLogout } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      // Código para atualizar dados quando voltar à tela do Painel
+      console.log('Tela de Painel voltou a ficar em foco.');
+    }, [])
+  );
+
   const components = [
-    { key: 'ProximaReuniao', title: 'Próxima Reunião', component: <ProximaReuniao /> },
-    { key: 'Calendario', title: 'Calendário', component: <Calendario /> },
+    { key: 'ProximaReuniao', component: <ProximaReuniao /> },
+    { key: 'Calendario', title: 'Calendário', component: <Calendario isProfessor={true} /> },
   ];
 
   return (
-    <FlatList
-      data={components}
-      keyExtractor={(item) => item.key}
-      renderItem={({ item }) => (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{item.title}</Text>
-          {item.component}
-        </View>
-      )}
-      contentContainerStyle={styles.container}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={components}
+        keyExtractor={(item) => item.key}
+        renderItem={({ item }) => (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{item.title}</Text>
+            {item.component}
+          </View>
+        )}
+        contentContainerStyle={styles.contentContainer}
+      />
+      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+        <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: '#fff',
     paddingVertical: 10,
+  },
+  logoutButton: {
+    backgroundColor: '#ff4d4d',
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    margin: 20,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  contentContainer: {
+    flexGrow: 1,
   },
   section: {
     paddingHorizontal: 20,
@@ -545,318 +432,218 @@ const styles = StyleSheet.create({
 });
 
 export default Painel;
-app/(tabs)/[date]/_layout.tsx: import { Tabs } from "expo-router";
-import { Text } from "react-native";
-import { View } from "react-native-reanimated/lib/typescript/Animated";
-
-export default function RootTabs(){
-
-    return(
-        <Tabs>
-            <Tabs.Screen name="manha"></Tabs.Screen>
-            <Tabs.Screen name="tarde"></Tabs.Screen>
-            <Tabs.Screen name="noite"></Tabs.Screen>
-        </Tabs>
-    )
-} app/(tabs)/[date]/manha.tsx: import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Checkbox } from 'react-native-paper';
-
-const Manha = () => {
-  const [horarios, setHorarios] = useState([
-    { time: '07:00 - 07:15', available: false },
-    { time: '07:15 - 07:30', available: false },
-    { time: '07:30 - 07:45', available: false },
-    { time: '07:45 - 08:00', available: false },
-    { time: '08:00 - 08:15', available: false },
-    { time: '08:15 - 08:30', available: false },
-    { time: '08:30 - 08:45', available: false },
-    { time: '08:45 - 09:00', available: false },
-    { time: '09:00 - 09:15', available: false },
-    { time: '09:15 - 09:30', available: false },
-    { time: '09:30 - 09:45', available: false },
-    { time: '09:45 - 10:00', available: false },
-    { time: '10:00 - 10:15', available: false },
-    { time: '10:15 - 10:30', available: false },
-    { time: '10:30 - 10:45', available: false },
-    { time: '10:45 - 11:00', available: false },
-    { time: '11:00 - 11:15', available: false },
-    { time: '11:15 - 11:30', available: false },
-    { time: '11:30 - 11:45', available: false },
-    { time: '11:45 - 12:00', available: false },
-  ]);
-
-  const toggleDisponibilidade = (index: number) => {
-    const newHorarios = [...horarios];
-    newHorarios[index].available = !newHorarios[index].available;
-    setHorarios(newHorarios);
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.headerText}>Horários da Manhã</Text>
-      {horarios.map((horario, index) => (
-        <View key={index} style={styles.horarioContainer}>
-          <Text style={styles.text}>{horario.time}</Text>
-          <Checkbox
-            status={horario.available ? 'checked' : 'unchecked'}
-            onPress={() => toggleDisponibilidade(index)}
-          />
-        </View>
-      ))}
-    </ScrollView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  horarioContainer: {
-    flexDirection: 'row', // Para alinhar a checkbox com o texto na horizontal
-    justifyContent: 'space-between', // Para colocar a checkbox à direita
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  text: {
-    fontSize: 18,
-  },
-});
-
-export default Manha;
- app/(tabs)/[date]/noite.tsx: import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Checkbox } from 'react-native-paper';
-
-const Noite = () => {
-  const [horarios, setHorarios] = useState([
-    { time: '18:00 - 18:15', available: false },
-    { time: '18:15 - 18:30', available: false },
-    { time: '18:30 - 18:45', available: false },
-    { time: '18:45 - 19:00', available: false },
-    { time: '19:00 - 19:15', available: false },
-    { time: '19:15 - 19:30', available: false },
-    { time: '19:30 - 19:45', available: false },
-    { time: '19:45 - 20:00', available: false },
-    { time: '20:00 - 20:15', available: false },
-    { time: '20:15 - 20:30', available: false },
-    { time: '20:30 - 20:45', available: false },
-    { time: '20:45 - 21:00', available: false },
-    { time: '21:00 - 21:15', available: false },
-    { time: '21:15 - 21:30', available: false },
-    { time: '21:30 - 21:45', available: false },
-    { time: '21:45 - 22:00', available: false },
-  ]);
-
-  const toggleDisponibilidade = (index: number) => {
-    const newHorarios = [...horarios];
-    newHorarios[index].available = !newHorarios[index].available;
-    setHorarios(newHorarios);
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.headerText}>Horários da Noite</Text>
-      {horarios.map((horario, index) => (
-        <View key={index} style={styles.horarioContainer}>
-          <Text style={styles.text}>{horario.time}</Text>
-          <Checkbox
-            status={horario.available ? 'checked' : 'unchecked'}
-            onPress={() => toggleDisponibilidade(index)}
-          />
-        </View>
-      ))}
-    </ScrollView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  horarioContainer: {
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  text: {
-    fontSize: 18,
-  },
-});
-
-export default Noite;
- app/(tabs)/[date]/tarde.tsx:   import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Checkbox } from 'react-native-paper';
-
-const Tarde = () => {
-  const [horarios, setHorarios] = useState([
-    { time: '12:00 - 12:15', available: false },
-    { time: '12:15 - 12:30', available: false },
-    { time: '12:30 - 12:45', available: false },
-    { time: '12:45 - 13:00', available: false },
-    { time: '13:00 - 13:15', available: false },
-    { time: '13:15 - 13:30', available: false },
-    { time: '13:30 - 13:45', available: false },
-    { time: '13:45 - 14:00', available: false },
-    { time: '14:00 - 14:15', available: false },
-    { time: '14:15 - 14:30', available: false },
-    { time: '14:30 - 14:45', available: false },
-    { time: '14:45 - 15:00', available: false },
-    { time: '15:00 - 15:15', available: false },
-    { time: '15:15 - 15:30', available: false },
-    { time: '15:30 - 15:45', available: false },
-    { time: '15:45 - 16:00', available: false },
-    { time: '16:00 - 16:15', available: false },
-    { time: '16:15 - 16:30', available: false },
-    { time: '16:30 - 16:45', available: false },
-    { time: '16:45 - 17:00', available: false },
-    { time: '17:00 - 17:15', available: false },
-    { time: '17:15 - 17:30', available: false },
-    { time: '17:30 - 17:45', available: false },
-    { time: '17:45 - 18:00', available: false },
-  ]);
-
-  const toggleDisponibilidade = (index: number) => {
-    const newHorarios = [...horarios];
-    newHorarios[index].available = !newHorarios[index].available;
-    setHorarios(newHorarios);
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.headerText}>Horários da Tarde</Text>
-      {horarios.map((horario, index) => (
-        <View key={index} style={styles.horarioContainer}>
-          <Text style={styles.text}>{horario.time}</Text>
-          <Checkbox
-            status={horario.available ? 'checked' : 'unchecked'}
-            onPress={() => toggleDisponibilidade(index)}
-          />
-        </View>
-      ))}
-    </ScrollView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  horarioContainer: {
-    flexDirection: 'row', 
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  text: {
-    fontSize: 18,
-  },
-});
-
-export default Tarde;
-src/components/Botao.tsx: import { theme } from "@/theme";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
-
-interface BotaoProps {
-    title: string;
-    onPress: () => void;
-    style?: object;
-    textStyle?: object;
-}
-
-const Botao: React.FC<BotaoProps> = ({ title, onPress, style, textStyle }) => {
-    return (
-        <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
-            <Text style={[styles.buttonText, textStyle]}>{title}</Text>
-        </TouchableOpacity> 
-    );
-}
-
-const styles = StyleSheet.create({
-    button: {
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: 10,
-        width: "90%",
-        height: 50,
-        borderRadius: 15,
-        elevation: 15,
-        backgroundColor: "#008739",
-    },
-    buttonText: {
-        fontSize: 18,
-        fontFamily: theme.fontFamily.primary,
-        letterSpacing: 0.25,
-        color: "white",
-    },
-});
-
-export default Botao;
- src/components/Calendario.tsx: // src/components/Calendario.tsx
-
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import HorariosDisponiveis from './HorariosDisponiveis';
+src\app\professor\reunioesMarcadas.tsx: 
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { useAuth } from '@/app/context/AuthContext';
+import axios from 'axios';
+import { API_URL } from '@/app/context/AuthContext';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import { router } from 'expo-router';
 
-const Calendario = () => {
-  const { user } = useAuth();
-  const [horarios, setHorarios] = useState<{[key: string]: string[]}>({});
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+// Extende dayjs para suportar fuso horário
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
-  const fetchHorariosDisponiveis = async (date: string) => {
-    // Simulação de uma chamada API para buscar horários disponíveis do professor
-    const response = await new Promise<{ data: { [key: string]: string[] } }>((resolve) =>
-      setTimeout(() => resolve({ data: {
-        manha: ['08:00', '09:00'],
-        tarde: ['14:00', '15:00'],
-        noite: ['19:00', '20:00'],
-      }}), 1000) // substitua por chamada real
-    );
-    setHorarios(response.data);
-    setSelectedDate(date);
+interface Reuniao {
+  _id: string;
+  date: string;
+  timeSlot: string;
+  reason: string;
+  canceled?: boolean; // Propriedade opcional
+  cancelReason?: string; // Propriedade opcional para o motivo do cancelamento
+}
+
+const ReunioesMarcadas = () => {
+  const { authState } = useAuth();
+  const [reunioes, setReunioes] = useState<Reuniao[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [cancelarReuniaoId, setCancelarReuniaoId] = useState<string | null>(null);
+  const [motivoCancelamento, setMotivoCancelamento] = useState<string>('');
+
+  useEffect(() => {
+    const fetchReunioes = async () => {
+      try {
+        if (authState.user && authState.user._id) {
+          console.log('Buscando todas as reuniões futuras para o professor:', authState.user._id);
+
+          const response = await axios.get(`${API_URL}/meeting/allFutureForProfessor`);
+          console.log('Resposta da API com todas as reuniões:', response.data);
+
+          let reunioesData: Reuniao[] = [];
+
+          if (Array.isArray(response.data)) {
+            reunioesData = response.data;
+          } else if (response.data && typeof response.data === 'object') {
+            reunioesData = [response.data];
+          }
+
+          const filteredReunioes = reunioesData.filter((reuniao) => !reuniao.canceled);
+          setReunioes(filteredReunioes);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar reuniões:', error);
+        setError('Erro ao buscar reuniões');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReunioes();
+  }, [authState]);
+
+  const handleCancelar = async () => {
+    if (!motivoCancelamento.trim()) {
+      alert('Por favor, insira o motivo do cancelamento.');
+      return;
+    }
+
+    try {
+      await axios.patch(`${API_URL}/meeting/${cancelarReuniaoId}/cancel`, { reason: motivoCancelamento });
+      setReunioes((prevReunioes) => prevReunioes.filter((reuniao) => reuniao._id !== cancelarReuniaoId));
+      alert('Reunião cancelada com sucesso.');
+      setCancelarReuniaoId(null);
+      setMotivoCancelamento('');
+    } catch (error) {
+      console.error('Erro ao cancelar a reunião:', error);
+      alert('Erro ao cancelar a reunião.');
+    }
   };
 
-  const handleDayPress = (date: string) => {
-    fetchHorariosDisponiveis(date);
+  if (loading) {
+    return <Text>Carregando reuniões...</Text>;
+  }
+
+  if (error) {
+    return <Text>Erro: {error}</Text>;
+  }
+
+  return (
+    <View style={styles.container}>
+      {reunioes.length > 0 ? (
+        reunioes.map((reuniao) => (
+          <View key={reuniao._id} style={styles.reuniaoContainer}>
+            <Text>Data: {reuniao.date}</Text>
+            <Text>Hora: {reuniao.timeSlot}</Text>
+            <Text>Motivo: {reuniao.reason}</Text>
+
+            {cancelarReuniaoId === reuniao._id ? (
+              <>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Motivo do cancelamento"
+                  value={motivoCancelamento}
+                  onChangeText={setMotivoCancelamento}
+                />
+                <TouchableOpacity style={styles.confirmButton} onPress={handleCancelar}>
+                  <Text style={styles.buttonText}>Confirmar cancelamento</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.cancelButton} onPress={() => setCancelarReuniaoId(null)}>
+                  <Text style={styles.buttonText}>Cancelar</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setCancelarReuniaoId(reuniao._id)}>
+                <Text style={styles.buttonText}>Desmarcar reunião</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ))
+      ) : (
+        <Text>Sem reuniões futuras marcadas</Text>
+      )}
+      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/professor')}>
+        <Text style={styles.buttonText}>Voltar ao Calendário</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  reuniaoContainer: {
+    marginBottom: 20,
+    padding: 10,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  input: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  confirmButton: {
+    backgroundColor: '#28a745',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  cancelButton: {
+    backgroundColor: '#ff0000',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  backButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+});
+
+export default ReunioesMarcadas;
+src\components\Calendario.tsx:
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Calendar } from 'react-native-calendars';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/app/context/AuthContext';
+import { useDate } from '@/app/context/DateContext'; // Importa o DateContext para gerenciar a data globalmente
+
+const Calendario = ({ isProfessor }: { isProfessor: boolean }) => {
+  const router = useRouter();
+  const { user } = useAuth();
+  const { selectedDate, setSelectedDate } = useDate(); // Usa o contexto para armazenar a data selecionada
+
+  const handleDayPress = (day: any) => {
+    const selectedDate = day.dateString;
+    setSelectedDate(selectedDate); // Atualiza a data no contexto global
+
+    if (isProfessor) {
+      console.log(selectedDate);// Redirecionar para a rota do professor passando a data
+      router.push(`/(tabs)/${selectedDate}`); // Garante que a data seja passada como parâmetro na URL
+    } else {
+      router.push(`/aluno/${selectedDate}`); 
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Selecione um dia</Text>
-      <TouchableOpacity onPress={() => handleDayPress('2024-08-10')}>
-        <Text>10 de Agosto de 2024</Text>
-      </TouchableOpacity>
-
-      {selectedDate && (
-        <HorariosDisponiveis horarios={horarios} />
-      )}
+      <Calendar
+        onDayPress={handleDayPress}
+        markedDates={{
+          [selectedDate]: { selected: true, selectedColor: '#00adf5' },
+        }}
+        minDate={new Date().toISOString().split('T')[0]} // Evita selecionar datas passadas
+      />
     </View>
   );
 };
@@ -876,60 +663,52 @@ const styles = StyleSheet.create({
 });
 
 export default Calendario;
- src/components/HorariosDisponiveis.tsx: 
+src\components\HorariosDisponiveis.tsx:
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
-import { TabView, SceneMap } from 'react-native-tab-view';
-import Checkbox from 'expo-checkbox';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import axios from 'axios'; // Certifique-se de importar o axios
+import { API_URL } from '@/app/context/AuthContext'; // Certifique-se de importar a API_URL
 import Botao from './Botao';
 
-const HorariosDisponiveis = ({ horarios }: { horarios: { [key: string]: string[] } }) => {
-  const [index, setIndex] = useState(0);
-  const [motivo, setMotivo] = useState('');
+const HorariosDisponiveis = ({ horarios, isProfessor, selectedDate }: { horarios: { [key: string]: string[] }, isProfessor: boolean, selectedDate: string }) => {
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
+  const [motivo, setMotivo] = useState('');
 
-  const renderHorarios = (period: string) => (
-    <View style={styles.tabContainer}>
-      {horarios[period]?.map((hora) => (
-        <View key={hora} style={styles.horarioItem}>
-          <Checkbox
-            value={selectedHorario === hora}
-            onValueChange={(newValue) => setSelectedHorario(newValue ? hora : null)}
-          />
-          <Text style={styles.horarioText}>{hora}</Text>
-        </View>
-      ))}
-    </View>
-  );
-
-  const renderScene = SceneMap({
-    manha: () => renderHorarios('manha'),
-    tarde: () => renderHorarios('tarde'),
-    noite: () => renderHorarios('noite'),
-  });
+  const handleConfirmHorario = async () => {
+    try {
+      const url = isProfessor ? `${API_URL}/professor/set-horario` : `${API_URL}/meeting`;
+      const response = await axios.post(url, {
+        date: selectedDate,
+        time: selectedHorario,
+        motivo: isProfessor ? undefined : motivo, // Motivo é requerido apenas para alunos
+      });
+      console.log("Horário Confirmado:", response.data);
+    } catch (error) {
+      console.error("Erro ao confirmar horário:", error);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <TabView
-        navigationState={{ index, routes: [
-          { key: 'manha', title: 'Manhã' },
-          { key: 'tarde', title: 'Tarde' },
-          { key: 'noite', title: 'Noite' },
-        ]}}
-        renderScene={renderScene}
-        onIndexChange={setIndex}
-        initialLayout={{ width: 300 }}
-        style={styles.tabView}
-      />
+    <View>
+      <Text>Horários Disponíveis</Text>
+      {/* Lógica para exibir os horários e permitir a seleção */}
+      {Object.keys(horarios).map((time) => (
+        <TouchableOpacity key={time} onPress={() => setSelectedHorario(time)}>
+          <Text>{time}</Text>
+        </TouchableOpacity>
+      ))}
+
       {selectedHorario && (
         <View style={styles.confirmContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Motivo da reunião"
-            value={motivo}
-            onChangeText={setMotivo}
-          />
-          <Botao title="Confirmar Horário" onPress={() => console.log('Horário Confirmado!')} />
+          {!isProfessor && (
+            <TextInput
+              style={styles.input}
+              placeholder="Motivo da reunião"
+              value={motivo}
+              onChangeText={setMotivo}
+            />
+          )}
+          <Botao title="Confirmar Horário" onPress={handleConfirmHorario} />
         </View>
       )}
     </View>
@@ -937,24 +716,6 @@ const HorariosDisponiveis = ({ horarios }: { horarios: { [key: string]: string[]
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: 20,
-  },
-  tabView: {
-    marginBottom: 20,
-  },
-  tabContainer: {
-    padding: 10,
-  },
-  horarioItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  horarioText: {
-    marginLeft: 10,
-    fontSize: 16,
-  },
   confirmContainer: {
     marginTop: 20,
   },
@@ -968,147 +729,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HorariosDisponiveis;
-  src/components/Input.tsx: // src/components/Input.tsx
-import React from 'react';
-import { View, TextInput, Text, StyleSheet } from 'react-native';
 
-interface CustomInputProps {
-  placeholder: string;
-  secureTextEntry?: boolean;
-  onChangeText: (text: string) => void;
-  onBlur: () => void;
-  value: string;
-  errorMessage?: string; 
-}
 
-const Input: React.FC<CustomInputProps> = ({ 
-  placeholder, 
-  secureTextEntry = false, 
-  onChangeText, 
-  onBlur, 
-  value, 
-  errorMessage 
-}) => {
-  return (
-    <View style={styles.container}>
-      <TextInput
-        style={[styles.input, errorMessage ? styles.inputError : null]}
-        placeholder={placeholder}
-        secureTextEntry={secureTextEntry}
-        onChangeText={onChangeText}
-        onBlur={onBlur}
-        value={value}
-      />
-      {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
-    </View>
-  );
-};
 
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
-  },
-  inputError: {
-    borderColor: 'red',
-  },
-  errorText: {
-    color: 'red',
-    marginTop: 5,
-  },
-});
 
-export default Input;
- src/components/ProximaReuniao.tsx: // src/components/ProximaReuniao.tsx
 
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useAuth } from '@/app/context/AuthContext';
 
-const ProximaReuniao = () => {
-  const { user } = useAuth();
-  const [proximaReuniao, setProximaReuniao] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Aqui você faria a requisição para a API para buscar a próxima reunião do aluno
-    // Exemplo: fetch(`/api/proxima-reuniao/${user.id}`)
-    const fetchProximaReuniao = async () => {
-      // Simulação de uma chamada API
-      const response = await new Promise<{ data: string | null }>((resolve) =>
-        setTimeout(() => resolve({ data: null }), 1000) // substitua por chamada real
-      );
-      setProximaReuniao(response.data);
-    };
-
-    fetchProximaReuniao();
-  }, [user]);
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Próxima Reunião</Text>
-      <Text style={styles.info}>
-        {proximaReuniao ? proximaReuniao : '-'}
-      </Text>
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  info: {
-    fontSize: 16,
-    color: '#008739',
-  },
-});
-
-export default ProximaReuniao;
-src/components/ProximaReuniaoAluno.tsx: import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-
-const ProximaReuniaoAluno = ({ proximaReuniao }: { proximaReuniao?: string }) => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Próxima Reunião:</Text>
-      <Text style={styles.reuniao}>
-        {proximaReuniao ? proximaReuniao : '—'}
-      </Text>
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    elevation: 5,
-    marginVertical: 10,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  reuniao: {
-    fontSize: 16,
-    marginTop: 10,
-  },
-});
-
-export default ProximaReuniaoAluno;

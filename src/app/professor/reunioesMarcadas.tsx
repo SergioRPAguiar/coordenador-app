@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import { useAuth } from '@/app/context/AuthContext';
 import axios from 'axios';
 import { API_URL } from '@/app/context/AuthContext';
@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { router } from 'expo-router';
+import Botao from '@/components/Botao';
 
 // Extende dayjs para suportar fuso horário
 dayjs.extend(utc);
@@ -65,18 +66,20 @@ const ReunioesMarcadas = () => {
       alert('Por favor, insira o motivo do cancelamento.');
       return;
     }
-
+  
     try {
+      // Chamada à API para cancelar a reunião e enviar o e-mail
       await axios.patch(`${API_URL}/meeting/${cancelarReuniaoId}/cancel`, { reason: motivoCancelamento });
       setReunioes((prevReunioes) => prevReunioes.filter((reuniao) => reuniao._id !== cancelarReuniaoId));
-      alert('Reunião cancelada com sucesso.');
+      alert('Reunião cancelada com sucesso. O aluno será notificado por e-mail.');
       setCancelarReuniaoId(null);
       setMotivoCancelamento('');
     } catch (error) {
       console.error('Erro ao cancelar a reunião:', error);
-      alert('Erro ao cancelar a reunião.');
+      alert('Erro ao cancelar a reunião. Verifique sua conexão ou tente novamente.');
     }
   };
+  
 
   if (loading) {
     return <Text>Carregando reuniões...</Text>;
@@ -88,41 +91,44 @@ const ReunioesMarcadas = () => {
 
   return (
     <View style={styles.container}>
-      {reunioes.length > 0 ? (
-        reunioes.map((reuniao) => (
-          <View key={reuniao._id} style={styles.reuniaoContainer}>
-            <Text>Data: {reuniao.date}</Text>
-            <Text>Hora: {reuniao.timeSlot}</Text>
-            <Text>Motivo: {reuniao.reason}</Text>
-
-            {cancelarReuniaoId === reuniao._id ? (
-              <>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Motivo do cancelamento"
-                  value={motivoCancelamento}
-                  onChangeText={setMotivoCancelamento}
-                />
-                <TouchableOpacity style={styles.confirmButton} onPress={handleCancelar}>
-                  <Text style={styles.buttonText}>Confirmar cancelamento</Text>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        {reunioes.length > 0 ? (
+          reunioes.map((reuniao) => (
+            <View key={reuniao._id} style={styles.reuniaoContainer}>
+              <Text style={styles.label}>Data: {reuniao.date}</Text>
+              <Text style={styles.label}>Hora: {reuniao.timeSlot}</Text>
+              <Text style={styles.label}>Motivo: {reuniao.reason}</Text>
+  
+              {cancelarReuniaoId === reuniao._id ? (
+                <>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Motivo do cancelamento"
+                    value={motivoCancelamento}
+                    onChangeText={setMotivoCancelamento}
+                    multiline
+                  />
+                  <TouchableOpacity style={styles.confirmButton} onPress={handleCancelar}>
+                    <Text style={styles.buttonText}>Confirmar cancelamento</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.cancelButton} onPress={() => setCancelarReuniaoId(null)}>
+                    <Text style={styles.buttonText}>Cancelar</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <TouchableOpacity style={styles.uncheckButton} onPress={() => setCancelarReuniaoId(reuniao._id)}>
+                  <Text style={styles.buttonText}>Desmarcar reunião</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton} onPress={() => setCancelarReuniaoId(null)}>
-                  <Text style={styles.buttonText}>Cancelar</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setCancelarReuniaoId(reuniao._id)}>
-                <Text style={styles.buttonText}>Desmarcar reunião</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ))
-      ) : (
-        <Text>Sem reuniões futuras marcadas</Text>
-      )}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/professor')}>
-        <Text style={styles.buttonText}>Voltar ao Calendário</Text>
-      </TouchableOpacity>
+              )}
+            </View>
+          ))
+        ) : (
+          <Text>Sem reuniões futuras marcadas</Text>
+        )}
+      </ScrollView>
+      <View style={styles.footerContainer}>
+        <Botao title="Voltar para o Calendário" onPress={() => router.replace('/professor')} />
+      </View>
     </View>
   );
 };
@@ -131,45 +137,72 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     backgroundColor: '#fff',
+    flex: 1,
+    paddingTop: 60
+    
   },
   reuniaoContainer: {
-    marginBottom: 20,
+    marginBottom: 30,
     padding: 10,
+    alignItems: 'center',
     borderColor: '#ddd',
-    borderWidth: 1,
+    borderWidth: 2,
     borderRadius: 5,
+  },
+  label: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 3,
   },
   input: {
     borderColor: '#ccc',
+    width: '100%',
+    marginTop: 5,
     borderWidth: 1,
     padding: 10,
     marginBottom: 10,
-    borderRadius: 5,
+    borderRadius: 8,
+    alignItems: 'center',
   },
   confirmButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: '#ff4d4d',
+    width: '100%',
+    marginTop: 5,
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 15,
     alignItems: 'center',
-    marginBottom: 10,
   },
   cancelButton: {
-    backgroundColor: '#ff0000',
+    backgroundColor: '#6e6e6e',
+    width: '100%',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 15,
     alignItems: 'center',
     marginBottom: 10,
+    marginTop: 10,
   },
-  backButton: {
-    backgroundColor: '#007bff',
+  uncheckButton: {
+    backgroundColor: '#ff4d4d',
+    width: '100%',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 15,
     alignItems: 'center',
+    marginBottom: 10,
     marginTop: 10,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  footerContainer: {
+    paddingTop: 5,
+    backgroundColor: '#fff', 
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopColor: '#ddd',
+  },
+  scrollViewContent: {
+    paddingBottom: 20, // Evita que o último elemento fique colado ao final da tela
   },
 });
 

@@ -15,8 +15,8 @@ const Calendario = ({ isProfessor }: { isProfessor: boolean }) => {
     setSelectedDate(selectedDate); // Atualiza a data no contexto global
 
     if (isProfessor) {
-      console.log(selectedDate);// Redirecionar para a rota do professor passando a data
-      router.push(`/(tabs)/${selectedDate}`); // Garante que a data seja passada como parâmetro na URL
+      console.log(selectedDate);
+      router.push(`/(tabs)/${selectedDate}`); 
     } else {
       router.push(`/aluno/${selectedDate}`); 
     }
@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   title: {
+    textAlign: 'center',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,

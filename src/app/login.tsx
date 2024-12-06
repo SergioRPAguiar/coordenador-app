@@ -54,7 +54,7 @@ const Login = () => {
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               placeholder="Email"
-              onChangeText={onChange}
+              onChangeText={(text) => onChange(text.toLowerCase())} // Força texto para minúsculas
               onBlur={onBlur}
               value={value}
               errorMessage={errors.email?.message}
@@ -69,7 +69,7 @@ const Login = () => {
             <Input
               placeholder="Senha"
               secureTextEntry={true}
-              onChangeText={onChange}
+              onChangeText={(text) => onChange(text.toLowerCase())} // Força texto para minúsculas
               onBlur={onBlur}
               value={value}
               errorMessage={errors.password?.message}

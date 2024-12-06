@@ -6,7 +6,6 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { API_URL, useAuth } from '@/app/context/AuthContext';
 import { useDate } from '@/app/context/DateContext';
 import Botao from '@/components/Botao';
-import { theme } from '@/theme';
 
 interface Horario {
   timeSlot: string;
@@ -22,6 +21,7 @@ const HorariosDia = () => {
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const { authState } = useAuth();
   const token = authState.token;
+  const [motivoInvalido, setMotivoInvalido] = useState(false);
 
   useEffect(() => {
     if (date) {
@@ -36,7 +36,8 @@ const HorariosDia = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setHorarios(response.data);
+      const sortedHorarios = response.data.sort((a: Horario, b: Horario) => a.timeSlot.localeCompare(b.timeSlot));
+      setHorarios(sortedHorarios);
     } catch (error) {
       console.error('Erro ao buscar horários:', error);
     }
@@ -53,9 +54,14 @@ const HorariosDia = () => {
       console.error("Usuário não autenticado");
       return;
     }
+    if (!motivo.trim()) {
+      setMotivoInvalido(true);
+      return;
+    }
+    setMotivoInvalido(false);
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/meeting`,
         {
           date: selectedDate,
@@ -69,82 +75,137 @@ const HorariosDia = () => {
           }
         }
       );
-      console.log("Reunião marcada com sucesso!", response.data);
       router.replace('/aluno');
     } catch (error) {
       console.error('Erro ao marcar reunião:', error);
     }
   };
 
+  const handleSelectHorario = (horario: string) => {
+    setSelectedHorario(selectedHorario === horario ? null : horario);
+    setMotivoInvalido(false);
+    setMotivo('');
+  };
+
+  const handleInputFocus = () => {
+    setMotivoInvalido(false);
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.headerText}>Horários Disponíveis</Text>
-      <Text style={styles.dateText}>Data selecionada: {selectedDate}</Text>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Text style={styles.headerText}>Horários Disponíveis</Text>
+        <Text style={styles.dateText}>Data selecionada: {selectedDate}</Text>
 
-      {horarios.length > 0 ? (
-        horarios.map((horario, index) => (
-          <View key={index} style={styles.horarioContainer}>
-            <Text style={styles.horarioText}>{horario.timeSlot}</Text>
-            <Checkbox
-              status={selectedHorario === horario.timeSlot ? 'checked' : 'unchecked'}
-              onPress={() => setSelectedHorario(horario.timeSlot)}
-              disabled={!horario.available}
-               
-            />
-          </View>
-        ))
-      ) : (
-        <Text style={styles.noHorariosText}>Nenhum horário disponível para esta data.</Text>
-      )}
+        {horarios.length > 0 ? (
+          horarios.map((horario, index) => (
+            <View key={index} style={styles.horarioContainer}>
+              <View style={styles.row}>
+                <Text style={styles.horarioText}>{horario.timeSlot}</Text>
+                <Checkbox
+                  status={selectedHorario === horario.timeSlot ? 'checked' : 'unchecked'}
+                  onPress={() => handleSelectHorario(horario.timeSlot)}
+                  disabled={!horario.available}
+                  color="#008739"
+                />
+              </View>
+              {selectedHorario === horario.timeSlot && (
+                <View style={styles.motivoContainer}>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      motivoInvalido && { borderColor: 'red' }
+                    ]}
+                    placeholder="Motivo da reunião"
+                    value={motivo}
+                    onChangeText={setMotivo}
+                    multiline
+                    onFocus={handleInputFocus}
+                  />
+                  {motivoInvalido && (
+                    <Text style={styles.errorText}>Motivo obrigatório. Por favor, preencha este campo.</Text>
+                  )}
+                  <Botao title="Marcar Reunião" onPress={confirmarReuniao} />
+                </View>
+              )}
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noHorariosText}>Nenhum horário disponível para esta data.</Text>
+        )}
+      </ScrollView>
 
-      {selectedHorario && (
-        <View style={styles.motivoContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Motivo da reunião"
-            value={motivo}
-            onChangeText={setMotivo}
-          />
-          <Botao title="Marcar Reunião" onPress={confirmarReuniao} />
-        </View>
-      )}
-
-      <Botao title="Voltar para o Calendário" onPress={() => router.replace('/aluno')} />
-    </ScrollView>
+      <View style={styles.footerContainer}>
+        <Botao title="Voltar para o Calendário" onPress={() => router.replace('/aluno')} />
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     padding: 20,
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#f9f9f9',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: 100,
   },
   headerText: {
-    fontSize: 20,
+    paddingTop: 30,
+    fontSize: 30,
     fontWeight: 'bold',
-    color: '#008739',
-    marginBottom: 10,
+    marginBottom: 5,
     textAlign: 'center',
+    color: '#008739'
   },
   dateText: {
-    fontSize: 18,
-    color: '#333',
-    marginBottom: 20,
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginBottom: 10,
     textAlign: 'center',
+    paddingBottom: 10,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   horarioContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    marginBottom: 15,
+    padding: 10,
     width: '100%',
-    marginBottom: 10,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
   },
   horarioText: {
     fontSize: 18,
     color: '#333',
-    flex: 1, // Para garantir que o texto ocupe o espaço disponível
+    flex: 1,
+  },
+  motivoContainer: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    alignItems: 'center',
+  },
+  input: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
+    width: '100%',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginBottom: 10,
   },
   noHorariosText: {
     fontSize: 16,
@@ -152,19 +213,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
     textAlign: 'center',
   },
-  motivoContainer: {
-    width: '100%',
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  input: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 25, // Bordas arredondadas como os botões
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     padding: 10,
-    marginBottom: 10,
-    width: '80%',
+    backgroundColor: '#fff',
+    alignItems: 'center',
   },
 });
 
