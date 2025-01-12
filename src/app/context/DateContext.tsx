@@ -24,3 +24,5 @@ export const DateProvider = ({ children }: { children: ReactNode }) => {
     </DateContext.Provider>
   );
 };
+
+export default DateContext;
