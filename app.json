@@ -23,8 +23,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sergioaguiar.agendacotad",
-      "usesCleartextTraffic": true
+      "package": "com.sergioaguiar.agendacotad"
     },
     "web": {
       "bundler": "metro",
