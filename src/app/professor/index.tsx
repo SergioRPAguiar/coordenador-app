@@ -4,6 +4,8 @@ import ProximaReuniao from '@/components/ProximaReuniao';
 import Calendario from '@/components/Calendario';
 import { useAuth } from '@/app/context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { theme } from '@/theme';
 
 const Painel = () => {
   const { onLogout } = useAuth();
@@ -21,6 +23,10 @@ const Painel = () => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+        <MaterialCommunityIcons name="logout" size={20} color="#666" style={{ transform: [{ scaleX: -1 }] }} />
+        <Text style={styles.logoutText}>Sair</Text>
+      </TouchableOpacity>
       <FlatList
         data={components}
         keyExtractor={(item) => item.key}
@@ -32,9 +38,6 @@ const Painel = () => {
         )}
         contentContainerStyle={styles.contentContainer}
       />
-      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -46,17 +49,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   logoutButton: {
-    backgroundColor: '#ff4d4d',
-    padding: 15,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    margin: 20,
+    gap: 5,
+    padding: 1,
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    marginLeft: 10,
   },
   logoutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: '#666',
+    fontSize: 14,
+    fontFamily: theme.fontFamily.medium,
   },
   contentContainer: {
     flexGrow: 1,

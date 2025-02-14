@@ -6,6 +6,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { API_URL, useAuth } from '@/app/context/AuthContext';
 import { useDate } from '@/app/context/DateContext';
 import Botao from '@/components/Botao';
+import BackButton from '@/components/BackButton';
 
 const Manha = () => {
   const router = useRouter();
@@ -98,6 +99,7 @@ const Manha = () => {
 
   return (
     <View style={styles.container}>
+      <BackButton />
       <ScrollView contentContainerStyle={styles.scrollViewContainer}>
         <Text style={styles.headerText}>Horários da Manhã</Text>
 

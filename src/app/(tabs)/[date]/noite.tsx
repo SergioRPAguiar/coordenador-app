@@ -6,6 +6,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { API_URL, useAuth } from '@/app/context/AuthContext';
 import { useDate } from '@/app/context/DateContext';
 import Botao from '@/components/Botao';
+import BackButton from '@/components/BackButton';
 
 const Noite = () => {
   const router = useRouter();
@@ -94,6 +95,7 @@ const Noite = () => {
 
   return (
     <View style={styles.container}>
+      <BackButton/>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.headerText}>Horários da Noite</Text>
         <Text style={styles.headerText2}>Data selecionada: {selectedDate}</Text>

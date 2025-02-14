@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     elevation: 5,
-    marginVertical: 1,
+    marginBottom: 15,
   },
   infoContainer: {
     flexDirection: 'row',

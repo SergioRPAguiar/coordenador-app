@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native
 import ProximaReuniaoAluno from '@/components/ProximaReuniaoAluno';
 import Calendario from '@/components/Calendario';
 import { useAuth } from '@/app/context/AuthContext';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { theme } from '@/theme';
 
 const PainelAluno = () => {
   const { onLogout } = useAuth();
@@ -14,6 +16,10 @@ const PainelAluno = () => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+      <MaterialCommunityIcons name="logout" size={20} color="#666" style={{ transform: [{ scaleX: -1 }] }} />
+        <Text style={styles.logoutText}>Sair</Text>
+      </TouchableOpacity>
       <FlatList
         data={components}
         keyExtractor={(item) => item.key}
@@ -25,9 +31,7 @@ const PainelAluno = () => {
         )}
         contentContainerStyle={styles.contentContainer}
       />
-      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+      
     </View>
   );
 };
@@ -43,27 +47,27 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingHorizontal: 20,
-    marginVertical: 10,
   },
   sectionTitle: {
     textAlign: 'center',
     fontSize: 30,
     fontWeight: 'bold',
-    marginBottom: 10,
+    
   },
   logoutButton: {
-    backgroundColor: '#ff4d4d',
-    padding: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    margin: 20,
-  },
-  logoutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      padding: 1,
+      alignSelf: 'flex-start',
+      marginTop: 10,
+      marginLeft: 10,
+    },
+    logoutText: {
+      color: '#666',
+      fontSize: 14,
+      fontFamily: theme.fontFamily.medium,
+    },
 });
 
 export default PainelAluno;

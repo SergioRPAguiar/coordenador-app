@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Image, StyleSheet, Alert, Text } from 'react-native';
+import { View, Image, StyleSheet, Alert, Text, TouchableOpacity } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { theme } from '@/theme';
 import Botao from '@/components/Botao';
 import Input from '@/components/Input';
+import { useSegments } from "expo-router";
 
 const schema = yup.object({
   name: yup.string().required("Informe o nome"),
@@ -34,18 +35,22 @@ const Register = () => {
     }
   };
 
+    const segments = useSegments();
+    const currentRoute = segments[0];
+
   return (
     <View style={styles.container}>
       <View style={styles.cabecalho}>
-        <Image
-          style={styles.image}
-          source={require("../../assets/images/logoif.png")}
-        />
-        <Text style={styles.text}>
-          AGENDA{"\n"}COTAD
-        </Text>
-      </View>
+              <Image
+                style={styles.image}
+                source={require("../../assets/images/logoif.png")}
+              />
+              <Text style={styles.text}>Agenda Cotad</Text>
+            </View>
       <View style={styles.form}>
+        <Text style={styles.subtitle}>
+                  {currentRoute === "login" ? "Acesse sua conta" : "Crie sua conta"}
+                </Text>
         <Controller
           control={control}
           name="name"
@@ -105,6 +110,11 @@ const Register = () => {
 
         <Botao title="Registrar" onPress={handleSubmit(handleRegister)} />
       </View>
+      <View style={styles.linkContainer}>
+        <TouchableOpacity onPress={() => router.push('/login')}>
+        <Text style={styles.linkText}>Já tem conta? Faça login aqui</Text>
+      </TouchableOpacity>
+</View>
     </View>
   );
 };
@@ -140,6 +150,22 @@ const styles = StyleSheet.create({
     maxHeight: 65,
     resizeMode: "contain",
     marginBottom: 30,
+  },
+  linkContainer: {
+    marginTop: 5,
+    alignItems: 'center',
+  },
+  linkText: {
+    color: '#008739',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+    fontFamily: theme.fontFamily.medium,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+    marginTop: 8,
+    fontFamily: theme.fontFamily.primary,
   },
 });
 

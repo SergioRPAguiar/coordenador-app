@@ -5,6 +5,7 @@ import axios from 'axios';
 import { API_URL } from '@/app/context/AuthContext';
 import { router } from 'expo-router';
 import Botao from '@/components/Botao';
+import BackButton from '@/components/BackButton';
 
 interface Reuniao {
   _id: string;
@@ -83,6 +84,7 @@ const ReunioesMarcadasAlunos = () => {
 
   return (
     <View style={styles.container}>
+      <BackButton />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {reunioes.length > 0 ? (
           reunioes.map((reuniao) => (

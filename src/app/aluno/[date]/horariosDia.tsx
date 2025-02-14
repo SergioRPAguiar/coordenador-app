@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TextInput, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TextInput, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { Checkbox } from 'react-native-paper';
 import axios from 'axios';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { API_URL, useAuth } from '@/app/context/AuthContext';
 import { useDate } from '@/app/context/DateContext';
 import Botao from '@/components/Botao';
+import BackButton from '@/components/BackButton';
 
 interface Horario {
   timeSlot: string;
@@ -22,6 +23,7 @@ const HorariosDia = () => {
   const { authState } = useAuth();
   const token = authState.token;
   const [motivoInvalido, setMotivoInvalido] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (date) {
@@ -43,6 +45,17 @@ const HorariosDia = () => {
     }
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchHorarios(selectedDate);
+    } catch (error) {
+      console.error('Erro ao atualizar:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     if (selectedDate) {
       fetchHorarios(selectedDate);
@@ -54,12 +67,12 @@ const HorariosDia = () => {
       console.error("Usuário não autenticado");
       return;
     }
+    
     if (!motivo.trim()) {
       setMotivoInvalido(true);
       return;
     }
-    setMotivoInvalido(false);
-
+    
     try {
       await axios.post(
         `${API_URL}/meeting`,
@@ -75,13 +88,45 @@ const HorariosDia = () => {
           }
         }
       );
+      
+      // Se sucesso, voltar para o calendário
       router.replace('/aluno');
+      
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400 && error.response.data.message === 'Horário indisponível') {
+          Alert.alert(
+            'Horário Indisponível',
+            'Este horário foi reservado por outro aluno. Por favor escolha outro.',
+            [
+              { 
+                text: 'OK', 
+                onPress: () => {
+                  // Atualizar lista de horários
+                  fetchHorarios(selectedDate);
+                  setSelectedHorario(null);
+                  setMotivo('');
+                }
+              }
+            ]
+          );
+          return;
+        }
+      }
+      
       console.error('Erro ao marcar reunião:', error);
+      Alert.alert('Erro', 'Não foi possível marcar a reunião. Tente novamente.');
     }
   };
-
   const handleSelectHorario = (horario: string) => {
+    // Verificar se o horário ainda está disponível na lista atual
+    const horarioSelecionado = horarios.find(h => h.timeSlot === horario);
+    
+    if (!horarioSelecionado?.available) {
+      Alert.alert('Horário Indisponível', 'Este horário já foi reservado por outro aluno');
+      return;
+    }
+  
     setSelectedHorario(selectedHorario === horario ? null : horario);
     setMotivoInvalido(false);
     setMotivo('');
@@ -93,7 +138,19 @@ const HorariosDia = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <BackButton />
+      <ScrollView 
+      contentContainerStyle={styles.scrollContainer}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          progressViewOffset={30} 
+          colors={['#008739']} 
+          progressBackgroundColor="#fff"
+        />
+      }
+      >
         <Text style={styles.headerText}>Horários Disponíveis</Text>
         <Text style={styles.dateText}>Data selecionada: {selectedDate}</Text>
 
@@ -147,10 +204,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f9f9f9',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingBottom: 100,
   },
   headerText: {
     paddingTop: 30,
@@ -213,6 +266,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     textAlign: 'center',
   },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: 100,
+    paddingTop: 10,
+  },
   footerContainer: {
     position: 'absolute',
     bottom: 0,
@@ -222,6 +280,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
   },
+  
+  
 });
 
 export default HorariosDia;

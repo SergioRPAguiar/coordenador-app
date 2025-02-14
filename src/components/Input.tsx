@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TextInput, Text, StyleSheet } from 'react-native';
+import { theme } from '@/theme';
 
 interface CustomInputProps {
   placeholder: string;
@@ -40,16 +41,22 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
+    borderColor: '#e0e0e0',
+    padding: 14,
+    borderRadius: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
+    fontFamily: theme.fontFamily.primary,
   },
   inputError: {
     borderColor: 'red',
+    backgroundColor: '#fffafa',
   },
   errorText: {
     color: 'red',
     marginTop: 5,
+    fontSize: 12,
+    fontFamily: theme.fontFamily.primary,
   },
 });
 

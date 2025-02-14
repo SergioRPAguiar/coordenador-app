@@ -8,6 +8,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { router } from 'expo-router';
 import Botao from '@/components/Botao';
+import BackButton from '@/components/BackButton';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -88,6 +89,7 @@ const ReunioesMarcadas = () => {
 
   return (
     <View style={styles.container}>
+      <BackButton />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {reunioes.length > 0 ? (
           reunioes.map((reuniao) => (
