@@ -1,21 +1,15 @@
 import React from "react";
-import {
-  View,
-  Image,
-  StyleSheet,
-  Alert,
-  Text,
-  TouchableOpacity,
-} from "react-native";
+import { View, StyleSheet, Alert, Text, TouchableOpacity, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useAuth } from "@/app/context/AuthContext";
+import { API_URL, useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "expo-router";
 import { theme } from "@/theme";
 import Botao from "@/components/Botao";
 import Input from "@/components/Input";
 import { useSegments } from "expo-router";
+import DynamicLogo from "@/components/DynamicLogo";
 
 const schema = yup.object({
   email: yup.string().email("Email inválido").required("Informe o email"),
@@ -34,16 +28,34 @@ const Login = () => {
     resolver: yupResolver(schema),
   });
 
-  const { onLogin } = useAuth();
+  const { onLogin, authState } = useAuth();
   const router = useRouter();
+  const segments = useSegments();
+  const currentRoute = segments[0];
 
   const handleLogin = async (data: { email: string; password: string }) => {
     const result = await onLogin!(data.email, data.password);
     if (result && result.error) {
-      Alert.alert(result.msg);
-    } else {
-      Alert.alert("Sucesso", "Login bem-sucedido!");
-      router.replace("/");
+      if (result.msg.includes("Confirme seu e-mail")) {
+        Alert.alert(
+          "E-mail não confirmado",
+          "Deseja reenviar o código de confirmação?",
+          [
+            {
+              text: "Sim",
+              onPress: () => {
+                router.push({
+                  pathname: "/confirmarCodigo",
+                  params: { email: data.email },
+                });
+              },
+            },
+            { text: "Não", style: "cancel" },
+          ]
+        );
+      } else {
+        Alert.alert(result.msg);
+      }
     }
   };
 
@@ -51,22 +63,13 @@ const Login = () => {
     router.push("/registro");
   };
 
-  const segments = useSegments();
-  const currentRoute = segments[0];
-
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.cabecalho}>
-        <Image
-          style={styles.image}
-          source={require("../../assets/images/logoif.png")}
-        />
-        <Text style={styles.text}>Agenda Cotad</Text>
+        <DynamicLogo />
       </View>
       <View style={styles.form}>
-        <Text style={styles.subtitle}>
-          {currentRoute === "login" ? "Acesse sua conta" : "Crie sua conta"}
-        </Text>
+        <Text style={styles.subtitle}>Acesse sua conta</Text>
         <Controller
           control={control}
           name="email"
@@ -74,6 +77,8 @@ const Login = () => {
             <Input
               placeholder="Email"
               onChangeText={(text) => onChange(text.toLowerCase())}
+              keyboardType="email-address"
+              autoCapitalize="none"
               onBlur={onBlur}
               value={value}
               errorMessage={errors.email?.message}
@@ -97,37 +102,28 @@ const Login = () => {
         />
 
         <Botao title="Login" onPress={handleSubmit(handleLogin)} />
-        <View style={styles.linkContainer}>
-          <TouchableOpacity onPress={handleNavigateToRegister}>
-            <Text style={styles.linkText}>Não tem conta? Crie uma aqui</Text>
-          </TouchableOpacity>
-        </View>
+
+        <TouchableOpacity onPress={handleNavigateToRegister}>
+          <Text style={styles.linkText}>Não tem conta? Crie uma aqui</Text>
+        </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flexGrow: 1,
     paddingTop: 100,
     alignItems: "center",
     justifyContent: "flex-start",
     backgroundColor: "#fff",
-    flex: 1,
   },
   cabecalho: {
     alignItems: "center",
     backgroundColor: "#fff",
-    marginBottom: 30,
-    marginTop: -30
-  },
-  text: {
-    maxWidth: "80%",
-    textAlign: "center",
-    fontSize: 50,
-    color: "#008739",
-    fontFamily: theme.fontFamily.secondary,
-    lineHeight: 54,
+    marginBottom: 10,
+    marginTop: -30,
   },
   form: {
     width: "80%",
@@ -135,21 +131,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#fff",
   },
-  image: {
-    maxWidth: 65,
-    maxHeight: 65,
-    resizeMode: "contain",
-    marginBottom: 30,
-  },
-  linkContainer: {
-    marginTop: 5,
-    alignItems: "center",
-  },
   linkText: {
     color: "#008739",
     fontSize: 14,
     textDecorationLine: "underline",
     fontFamily: theme.fontFamily.medium,
+    marginTop: 10,
   },
   subtitle: {
     fontSize: 16,

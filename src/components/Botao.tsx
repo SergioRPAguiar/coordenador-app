@@ -7,16 +7,25 @@ interface BotaoProps {
     onPress: () => void;
     style?: object;
     textStyle?: object;
+    disabled?: boolean;
 }
 
-const Botao: React.FC<BotaoProps> = ({ title, onPress, style, textStyle }) => {
+const Botao: React.FC<BotaoProps> = ({ title, onPress, style, textStyle, disabled = false }) => {
     return (
-        <TouchableOpacity style={[styles.button, style]} onPress={onPress} activeOpacity={0.9}
->
-            <Text style={[styles.buttonText, textStyle]}>{title}</Text>
+        <TouchableOpacity 
+          style={[
+            styles.button, 
+            style, 
+            disabled && styles.disabledButton 
+          ]} 
+          onPress={onPress} 
+          activeOpacity={0.9}
+          disabled={disabled} 
+        >
+          <Text style={[styles.buttonText, textStyle]}>{title}</Text>
         </TouchableOpacity> 
-    );
-}
+      );
+    }
 
 const styles = StyleSheet.create({
     button: {
@@ -32,6 +41,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 4,
         elevation: 5,
+      },
+      disabledButton: { 
+        backgroundColor: "#ccc",
+        opacity: 0.7,
       },
       buttonText: {
         fontSize: 16,

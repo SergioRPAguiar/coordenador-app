@@ -15,15 +15,18 @@
     "ios": {
       "supportsTablet": true,
       "config": {
-        "usesNonExemptEncryption": false
+        "usesNonExemptEncryption": false,
+        "newArchEnabled": true
       }
     },
     "android": {
+      
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sergioaguiar.agendacotad"
+      "package": "com.sergioaguiar.agendacotad",
+      "newArchEnabled": true
     },
     "web": {
       "bundler": "metro",

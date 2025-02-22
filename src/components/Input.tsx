@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TextInputProps } from 'react-native';
 import { theme } from '@/theme';
 
 interface CustomInputProps {
@@ -9,6 +9,8 @@ interface CustomInputProps {
   onBlur: () => void;
   value: string;
   errorMessage?: string; 
+  keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 }
 
 const Input: React.FC<CustomInputProps> = ({ 
@@ -17,7 +19,9 @@ const Input: React.FC<CustomInputProps> = ({
   onChangeText, 
   onBlur, 
   value, 
-  errorMessage 
+  errorMessage,
+  keyboardType = 'default',
+  autoCapitalize = 'sentences'
 }) => {
   return (
     <View style={styles.container}>
@@ -28,6 +32,8 @@ const Input: React.FC<CustomInputProps> = ({
         onChangeText={onChangeText}
         onBlur={onBlur}
         value={value}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
       />
       {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
     </View>
@@ -37,12 +43,12 @@ const Input: React.FC<CustomInputProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 12,
   },
   input: {
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    padding: 14,
+    padding: 15,
     borderRadius: 10,
     fontSize: 16,
     backgroundColor: '#fff',

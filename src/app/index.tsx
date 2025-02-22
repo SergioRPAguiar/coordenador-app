@@ -1,26 +1,30 @@
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
+import { Text, View } from "react-native";
 
 export default function Index() {
-  const { authState } = useAuth();
+  const { authState, isLoading } = useAuth(); // Adicione isLoading
   const router = useRouter();
 
   useEffect(() => {
-    if (authState?.authenticated !== null) {
+    if (!isLoading) { // Só executa quando o loading terminar
       const isProfessor = authState.user?.professor;
       if (authState.authenticated) {
-        if (authState.user?.professor) {
-          router.push('/professor'); 
-        } else {
-          router.push('/aluno');
-        }
+        router.replace(isProfessor ? '/professor' : '/aluno');
       } else {
-        console.log("Indo para o login");
-        router.replace("/login");
+        router.replace('/login');
       }
     }
-  }, [authState, router]);
+  }, [authState, isLoading, router]); // Adicione isLoading nas dependências
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Carregando...</Text>
+      </View>
+    );
+  }
 
   return null;
 }

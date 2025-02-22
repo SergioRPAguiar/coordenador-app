@@ -1,14 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
-import { useAuth } from '@/app/context/AuthContext';
-import axios from 'axios';
-import { API_URL } from '@/app/context/AuthContext';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-import { router } from 'expo-router';
-import Botao from '@/components/Botao';
-import BackButton from '@/components/BackButton';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import { useAuth } from "@/app/context/AuthContext";
+import axios from "axios";
+import { API_URL } from "@/app/context/AuthContext";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import { router } from "expo-router";
+import Botao from "@/components/Botao";
+import BackButton from "@/components/BackButton";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -19,6 +26,10 @@ interface Reuniao {
   reason: string;
   canceled?: boolean;
   cancelReason?: string;
+  student: {
+    name: string;
+    email: string;
+  };
 }
 
 const ReunioesMarcadas = () => {
@@ -26,32 +37,41 @@ const ReunioesMarcadas = () => {
   const [reunioes, setReunioes] = useState<Reuniao[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [cancelarReuniaoId, setCancelarReuniaoId] = useState<string | null>(null);
-  const [motivoCancelamento, setMotivoCancelamento] = useState<string>('');
+  const [cancelarReuniaoId, setCancelarReuniaoId] = useState<string | null>(
+    null
+  );
+  const [motivoCancelamento, setMotivoCancelamento] = useState<string>("");
 
   useEffect(() => {
     const fetchReunioes = async () => {
       try {
         if (authState.user && authState.user._id) {
-          console.log('Buscando todas as reuniões futuras para o professor:', authState.user._id);
+          console.log(
+            "Buscando todas as reuniões futuras para o professor:",
+            authState.user._id
+          );
 
-          const response = await axios.get(`${API_URL}/meeting/allFutureForProfessor`);
-          console.log('Resposta da API com todas as reuniões:', response.data);
+          const response = await axios.get(
+            `${API_URL}/meeting/allFutureForProfessor`
+          );
+          console.log("Resposta da API com todas as reuniões:", response.data);
 
           let reunioesData: Reuniao[] = [];
 
           if (Array.isArray(response.data)) {
             reunioesData = response.data;
-          } else if (response.data && typeof response.data === 'object') {
+          } else if (response.data && typeof response.data === "object") {
             reunioesData = [response.data];
           }
 
-          const filteredReunioes = reunioesData.filter((reuniao) => !reuniao.canceled);
+          const filteredReunioes = reunioesData.filter(
+            (reuniao) => !reuniao.canceled
+          );
           setReunioes(filteredReunioes);
         }
       } catch (error) {
-        console.error('Erro ao buscar reuniões:', error);
-        setError('Erro ao buscar reuniões');
+        console.error("Erro ao buscar reuniões:", error);
+        setError("Erro ao buscar reuniões");
       } finally {
         setLoading(false);
       }
@@ -62,22 +82,29 @@ const ReunioesMarcadas = () => {
 
   const handleCancelar = async () => {
     if (!motivoCancelamento.trim()) {
-      alert('Por favor, insira o motivo do cancelamento.');
+      alert("Por favor, insira o motivo do cancelamento.");
       return;
     }
-  
+
     try {
-      await axios.patch(`${API_URL}/meeting/${cancelarReuniaoId}/cancel`, { reason: motivoCancelamento });
-      setReunioes((prevReunioes) => prevReunioes.filter((reuniao) => reuniao._id !== cancelarReuniaoId));
-      alert('Reunião cancelada com sucesso. O aluno será notificado por e-mail.');
+      await axios.patch(`${API_URL}/meeting/${cancelarReuniaoId}/cancel`, {
+        reason: motivoCancelamento,
+      });
+      setReunioes((prevReunioes) =>
+        prevReunioes.filter((reuniao) => reuniao._id !== cancelarReuniaoId)
+      );
+      alert(
+        "Reunião cancelada com sucesso. O aluno será notificado por e-mail."
+      );
       setCancelarReuniaoId(null);
-      setMotivoCancelamento('');
+      setMotivoCancelamento("");
     } catch (error) {
-      console.error('Erro ao cancelar a reunião:', error);
-      alert('Erro ao cancelar a reunião. Verifique sua conexão ou tente novamente.');
+      console.error("Erro ao cancelar a reunião:", error);
+      alert(
+        "Erro ao cancelar a reunião. Verifique sua conexão ou tente novamente."
+      );
     }
   };
-  
 
   if (loading) {
     return <Text>Carregando reuniões...</Text>;
@@ -94,10 +121,12 @@ const ReunioesMarcadas = () => {
         {reunioes.length > 0 ? (
           reunioes.map((reuniao) => (
             <View key={reuniao._id} style={styles.reuniaoContainer}>
+              <Text style={styles.label}>Aluno: {reuniao.student.name}</Text>
+              <Text style={styles.label}>Email: {reuniao.student.email}</Text>
               <Text style={styles.label}>Data: {reuniao.date}</Text>
               <Text style={styles.label}>Hora: {reuniao.timeSlot}</Text>
               <Text style={styles.label}>Motivo: {reuniao.reason}</Text>
-  
+
               {cancelarReuniaoId === reuniao._id ? (
                 <>
                   <TextInput
@@ -107,15 +136,26 @@ const ReunioesMarcadas = () => {
                     onChangeText={setMotivoCancelamento}
                     multiline
                   />
-                  <TouchableOpacity style={styles.confirmButton} onPress={handleCancelar}>
-                    <Text style={styles.buttonText}>Confirmar cancelamento</Text>
+                  <TouchableOpacity
+                    style={styles.confirmButton}
+                    onPress={handleCancelar}
+                  >
+                    <Text style={styles.buttonText}>
+                      Confirmar cancelamento
+                    </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.cancelButton} onPress={() => setCancelarReuniaoId(null)}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setCancelarReuniaoId(null)}
+                  >
                     <Text style={styles.buttonText}>Cancelar</Text>
                   </TouchableOpacity>
                 </>
               ) : (
-                <TouchableOpacity style={styles.uncheckButton} onPress={() => setCancelarReuniaoId(reuniao._id)}>
+                <TouchableOpacity
+                  style={styles.uncheckButton}
+                  onPress={() => setCancelarReuniaoId(reuniao._id)}
+                >
                   <Text style={styles.buttonText}>Desmarcar reunião</Text>
                 </TouchableOpacity>
               )}
@@ -126,7 +166,10 @@ const ReunioesMarcadas = () => {
         )}
       </ScrollView>
       <View style={styles.footerContainer}>
-        <Botao title="Voltar para o Calendário" onPress={() => router.replace('/professor')} />
+        <Botao
+          title="Voltar para o Calendário"
+          onPress={() => router.replace("/professor")}
+        />
       </View>
     </View>
   );
@@ -135,70 +178,69 @@ const ReunioesMarcadas = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     flex: 1,
-    paddingTop: 60
-    
+    paddingTop: 60,
   },
   reuniaoContainer: {
     marginBottom: 30,
     padding: 10,
-    alignItems: 'center',
-    borderColor: '#ddd',
+    alignItems: "center",
+    borderColor: "#ddd",
     borderWidth: 2,
     borderRadius: 5,
   },
   label: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     marginBottom: 3,
   },
   input: {
-    borderColor: '#ccc',
-    width: '100%',
+    borderColor: "#ccc",
+    width: "100%",
     marginTop: 5,
     borderWidth: 1,
     padding: 10,
     marginBottom: 10,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   confirmButton: {
-    backgroundColor: '#ff4d4d',
-    width: '100%',
+    backgroundColor: "#ff4d4d",
+    width: "100%",
     marginTop: 5,
     padding: 10,
     borderRadius: 15,
-    alignItems: 'center',
+    alignItems: "center",
   },
   cancelButton: {
-    backgroundColor: '#6e6e6e',
-    width: '100%',
+    backgroundColor: "#6e6e6e",
+    width: "100%",
     padding: 10,
     borderRadius: 15,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 10,
     marginTop: 10,
   },
   uncheckButton: {
-    backgroundColor: '#ff4d4d',
-    width: '100%',
+    backgroundColor: "#ff4d4d",
+    width: "100%",
     padding: 10,
     borderRadius: 15,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 10,
     marginTop: 10,
   },
   buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   footerContainer: {
     paddingTop: 5,
-    backgroundColor: '#fff', 
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderTopColor: '#ddd',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    borderTopColor: "#ddd",
   },
   scrollViewContent: {
     paddingBottom: 20,
