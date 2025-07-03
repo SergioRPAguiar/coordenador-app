@@ -2,119 +2,59 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Alert } from "react-native";
 import { Checkbox } from "react-native-paper";
 import axios from "axios";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, router } from "expo-router";
 import { API_URL, useAuth } from "@/app/context/AuthContext";
 import { useDate } from "@/app/context/DateContext";
 import Botao from "@/components/Botao";
 import BackButton from "@/components/BackButton";
+import { useHorarios } from '@/hooks/useHorarios';
+import { slots } from '@/utils/horariosSlots';
 
 const Manha = () => {
-  const router = useRouter();
-  const { date } = useLocalSearchParams();
-  const { selectedDate, setSelectedDate } = useDate();
-  const [horarios, setHorarios] = useState([
-    { time: "07:00 - 07:15", available: false },
-    { time: "07:15 - 07:30", available: false },
-    { time: "07:30 - 07:45", available: false },
-    { time: "07:45 - 08:00", available: false },
-    { time: "08:00 - 08:15", available: false },
-    { time: "08:15 - 08:30", available: false },
-    { time: "08:30 - 08:45", available: false },
-    { time: "08:45 - 09:00", available: false },
-    { time: "09:00 - 09:15", available: false },
-    { time: "09:15 - 09:30", available: false },
-    { time: "09:30 - 09:45", available: false },
-    { time: "09:45 - 10:00", available: false },
-    { time: "10:00 - 10:15", available: false },
-    { time: "10:15 - 10:30", available: false },
-    { time: "10:30 - 10:45", available: false },
-    { time: "10:45 - 11:00", available: false },
-    { time: "11:00 - 11:15", available: false },
-    { time: "11:15 - 11:30", available: false },
-    { time: "11:30 - 11:45", available: false },
-    { time: "11:45 - 12:00", available: false },
-  ]);
-
+  const { selectedDate } = useDate();
   const { authState } = useAuth();
-  const token = authState.token;
-
-  useEffect(() => {
-    if (date) {
-      setSelectedDate(date as string);
-    }
-  }, [date]);
-
-  const fetchHorarios = async (selectedDate: string) => {
-    try {
-      const response = await axios.get(`${API_URL}/schedule/available/${selectedDate}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const allTimeSlots = [
-        "07:00 - 07:15",
-        "07:15 - 07:30",
-        "07:30 - 07:45",
-        "07:45 - 08:00",
-        "08:00 - 08:15",
-        "08:15 - 08:30",
-        "08:30 - 08:45",
-        "08:45 - 09:00",
-        "09:00 - 09:15",
-        "09:15 - 09:30",
-        "09:30 - 09:45",
-        "09:45 - 10:00",
-        "10:00 - 10:15",
-        "10:15 - 10:30",
-        "10:30 - 10:45",
-        "10:45 - 11:00",
-        "11:00 - 11:15",
-        "11:15 - 11:30",
-        "11:30 - 11:45",
-        "11:45 - 12:00"
-      ];
+  const token = authState?.token;
   
-      const updatedHorarios = allTimeSlots.map(time => ({
-        time,
-        available: response.data.some((h: any) => h.timeSlot === time && h.available)
-      }));
-  
-      setHorarios(updatedHorarios);
-    } catch (error) {
-      console.error('Erro ao buscar horários:', error);
-    }
-  };
-  
-
-  useEffect(() => {
-    if (selectedDate) {
-      fetchHorarios(selectedDate);
-    }
-  }, [selectedDate]);
+  const { 
+    horarios,  
+    error, 
+    refresh,
+    updateLocal
+  } = useHorarios(selectedDate, token, slots.manha);
 
   const toggleDisponibilidade = async (index: number) => {
-    const newHorarios = [...horarios];
-    const newAvailability = !newHorarios[index].available;
+    if (!token) return;
     
+    const newAvailability = !horarios[index].available;
+
     try {
+      
+      updateLocal(prev => prev.map((h, i) => 
+        i === index ? {...h, available: newAvailability} : h
+      ));
+
       await axios.post(
         `${API_URL}/schedule`,
         {
           date: selectedDate,
-          timeSlot: newHorarios[index].time,
+          timeSlot: horarios[index].time,
           available: newAvailability
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
-      newHorarios[index].available = newAvailability;
-      setHorarios(newHorarios);
-  
+
+      await refresh();
+
     } catch (error) {
       console.error('Erro ao atualizar horário:', error);
-      const restoredHorarios = [...horarios];
-      restoredHorarios[index].available = !newAvailability;
-      setHorarios(restoredHorarios);
+      updateLocal(prev => prev.map((h, i) => 
+        i === index ? {...h, available: !newAvailability} : h
+      ));
     }
   };
+
+  if (error) return <Text>Erro: {error}</Text>;
+
 
   return (
     <View style={styles.container}>

@@ -2,107 +2,59 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Alert } from "react-native";
 import { Checkbox } from "react-native-paper";
 import axios from "axios";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, router } from "expo-router";
 import { API_URL, useAuth } from "@/app/context/AuthContext";
 import { useDate } from "@/app/context/DateContext";
 import Botao from "@/components/Botao";
 import BackButton from "@/components/BackButton";
+import { useHorarios } from '@/hooks/useHorarios';
+import { slots } from '@/utils/horariosSlots';
 
 const Tarde = () => {
-  const router = useRouter();
-  const { date } = useLocalSearchParams();
-  const { selectedDate, setSelectedDate } = useDate();
   const { authState } = useAuth();
-  const token = authState.token;
-
-  const [horarios, setHorarios] = useState([
-    { time: "12:00 - 12:15", available: false },
-    { time: "12:15 - 12:30", available: false },
-    { time: "12:30 - 12:45", available: false },
-    { time: "12:45 - 13:00", available: false },
-    { time: "13:00 - 13:15", available: false },
-    { time: "13:15 - 13:30", available: false },
-    { time: "13:30 - 13:45", available: false },
-    { time: "13:45 - 14:00", available: false },
-    { time: "14:00 - 14:15", available: false },
-    { time: "14:15 - 14:30", available: false },
-    { time: "14:30 - 14:45", available: false },
-    { time: "14:45 - 15:00", available: false },
-    { time: "15:00 - 15:15", available: false },
-    { time: "15:15 - 15:30", available: false },
-    { time: "15:30 - 15:45", available: false },
-    { time: "15:45 - 16:00", available: false },
-    { time: "16:00 - 16:15", available: false },
-    { time: "16:15 - 16:30", available: false },
-    { time: "16:30 - 16:45", available: false },
-    { time: "16:45 - 17:00", available: false },
-    { time: "17:00 - 17:15", available: false },
-    { time: "17:15 - 17:30", available: false },
-    { time: "17:30 - 17:45", available: false },
-    { time: "17:45 - 18:00", available: false },
-  ]);
-
-  useEffect(() => {
-    if (date) {
-      setSelectedDate(date as string);
-    }
-  }, [date]);
-
-  const fetchHorarios = async (selectedDate: string) => {
-    try {
-      const response = await axios.get(`${API_URL}/schedule/available/${selectedDate}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      const completeHorarios = horarios.map(horario => ({
-        ...horario,
-        available: response.data.some((h: any) => h.timeSlot === horario.time)
-      }));
+  const { selectedDate } = useDate();
+  const token = authState?.token;
   
-      setHorarios(completeHorarios);
-    } catch (error) {
-      console.error('Erro ao buscar horários:', error);
-    }
-  };
+  const { 
+    horarios,  
+    error, 
+    refresh,
+    updateLocal
+  } = useHorarios(selectedDate, token, slots.tarde);
 
-  useEffect(() => {
-    if (selectedDate) {
-      fetchHorarios(selectedDate);
-    }
-  }, [selectedDate]);
 
   const toggleDisponibilidade = async (index: number) => {
-    const newHorarios = [...horarios];
-    const newAvailability = !newHorarios[index].available;
+    if (!token) return;
     
+    const newAvailability = !horarios[index].available;
+
     try {
+      // Atualização otimista
+      updateLocal(prev => prev.map((h, i) => 
+        i === index ? {...h, available: newAvailability} : h
+      ));
+
       await axios.post(
         `${API_URL}/schedule`,
         {
           date: selectedDate,
-          timeSlot: newHorarios[index].time,
+          timeSlot: horarios[index].time,
           available: newAvailability
         },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-  
-      if (!newAvailability) {
-        newHorarios.splice(index, 1);
-      } else {
-        newHorarios[index].available = newAvailability;
-      }
-      
-      setHorarios(newHorarios);
-  
+
+      await refresh();
+
     } catch (error) {
       console.error('Erro ao atualizar horário:', error);
-      const restoredHorarios = [...horarios];
-      restoredHorarios[index].available = !newAvailability;
-      setHorarios(restoredHorarios);
+      updateLocal(prev => prev.map((h, i) => 
+        i === index ? {...h, available: !newAvailability} : h
+      ));
     }
   };
+
+  if (error) return <Text>Erro: {error}</Text>;
 
   return (
     <View style={styles.container}>

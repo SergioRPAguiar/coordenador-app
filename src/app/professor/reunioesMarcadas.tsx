@@ -26,7 +26,7 @@ interface Reuniao {
   reason: string;
   canceled?: boolean;
   cancelReason?: string;
-  student: {
+  userId: {
     name: string;
     email: string;
   };
@@ -54,6 +54,7 @@ const ReunioesMarcadas = () => {
           const response = await axios.get(
             `${API_URL}/meeting/allFutureForProfessor`
           );
+          console.log('Payload raw:', response.data);
           console.log("Resposta da API com todas as reuniões:", response.data);
 
           let reunioesData: Reuniao[] = [];
@@ -121,8 +122,8 @@ const ReunioesMarcadas = () => {
         {reunioes.length > 0 ? (
           reunioes.map((reuniao) => (
             <View key={reuniao._id} style={styles.reuniaoContainer}>
-              <Text style={styles.label}>Aluno: {reuniao.student.name}</Text>
-              <Text style={styles.label}>Email: {reuniao.student.email}</Text>
+              <Text style={styles.label}>Aluno: {reuniao.userId.name}</Text>
+              <Text style={styles.label}>Email: {reuniao.userId.email}</Text>
               <Text style={styles.label}>Data: {reuniao.date}</Text>
               <Text style={styles.label}>Hora: {reuniao.timeSlot}</Text>
               <Text style={styles.label}>Motivo: {reuniao.reason}</Text>

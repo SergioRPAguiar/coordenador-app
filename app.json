@@ -20,11 +20,11 @@
       }
     },
     "android": {
-      
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "softwareKeyboardLayoutMode": "pan",
       "package": "com.sergioaguiar.agendacotad",
       "newArchEnabled": true
     },
@@ -36,7 +36,18 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true
+          },
+          "ios": {
+            "flipper": false
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

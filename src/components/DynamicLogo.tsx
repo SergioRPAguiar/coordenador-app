@@ -19,7 +19,7 @@ const DynamicLogo = () => {
         onError={(e) => console.log('Erro na imagem:', e.nativeEvent.error)}
       />
       <Text style={[styles.appNameText, { fontFamily: fontFamily.secondary }]}>
-        {authState.logoConfig?.appName || 'Agenda Cotad'}
+        {authState.logoConfig?.appName || 'Coordenador.app'}
       </Text>
     </View>
   );

@@ -4,11 +4,11 @@ import { useAuth } from "./context/AuthContext";
 import { Text, View } from "react-native";
 
 export default function Index() {
-  const { authState, isLoading } = useAuth(); // Adicione isLoading
+  const { authState, isLoading } = useAuth(); 
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading) { // Só executa quando o loading terminar
+    if (!isLoading) { 
       const isProfessor = authState.user?.professor;
       if (authState.authenticated) {
         router.replace(isProfessor ? '/professor' : '/aluno');
@@ -16,7 +16,7 @@ export default function Index() {
         router.replace('/login');
       }
     }
-  }, [authState, isLoading, router]); // Adicione isLoading nas dependências
+  }, [authState, isLoading, router]); 
 
   if (isLoading) {
     return (

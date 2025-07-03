@@ -9,99 +9,59 @@ import {
 } from "react-native";
 import { Checkbox } from "react-native-paper";
 import axios from "axios";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, router } from "expo-router";
 import { API_URL, useAuth } from "@/app/context/AuthContext";
 import { useDate } from "@/app/context/DateContext";
 import Botao from "@/components/Botao";
 import BackButton from "@/components/BackButton";
+import { useHorarios } from '@/hooks/useHorarios';
+import { slots } from '@/utils/horariosSlots';
 
 const Noite = () => {
-  const router = useRouter();
-  const { date } = useLocalSearchParams();
-  const { selectedDate, setSelectedDate } = useDate();
   const { authState } = useAuth();
-  const token = authState.token;
-
-  const [horarios, setHorarios] = useState([
-    { time: "18:00 - 18:15", available: false },
-    { time: "18:15 - 18:30", available: false },
-    { time: "18:30 - 18:45", available: false },
-    { time: "18:45 - 19:00", available: false },
-    { time: "19:00 - 19:15", available: false },
-    { time: "19:15 - 19:30", available: false },
-    { time: "19:30 - 19:45", available: false },
-    { time: "19:45 - 20:00", available: false },
-    { time: "20:00 - 20:15", available: false },
-    { time: "20:15 - 20:30", available: false },
-    { time: "20:30 - 20:45", available: false },
-    { time: "20:45 - 21:00", available: false },
-    { time: "21:00 - 21:15", available: false },
-    { time: "21:15 - 21:30", available: false },
-    { time: "21:30 - 21:45", available: false },
-    { time: "21:45 - 22:00", available: false },
-  ]);
-
-  useEffect(() => {
-    if (date) {
-      setSelectedDate(date as string);
-    }
-  }, [date]);
-
-  const fetchHorarios = async (selectedDate: string) => {
-    try {
-      const response = await axios.get(`${API_URL}/schedule/available/${selectedDate}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      const completeHorarios = horarios.map(horario => ({
-        ...horario,
-        available: response.data.some((h: any) => h.timeSlot === horario.time)
-      }));
+  const { selectedDate } = useDate();
+  const token = authState?.token;
   
-      setHorarios(completeHorarios);
-    } catch (error) {
-      console.error('Erro ao buscar horários:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedDate) {
-      fetchHorarios(selectedDate);
-    }
-  }, [selectedDate]);
+  const { 
+    horarios,  
+    error, 
+    refresh,
+    updateLocal
+  } = useHorarios(selectedDate, token, slots.noite);
 
   const toggleDisponibilidade = async (index: number) => {
-    const newHorarios = [...horarios];
-    const newAvailability = !newHorarios[index].available;
+    if (!token) return;
     
+    const newAvailability = !horarios[index].available;
+
     try {
+      // Atualização otimista
+      updateLocal(prev => prev.map((h, i) => 
+        i === index ? {...h, available: newAvailability} : h
+      ));
+
       await axios.post(
         `${API_URL}/schedule`,
         {
           date: selectedDate,
-          timeSlot: newHorarios[index].time,
+          timeSlot: horarios[index].time,
           available: newAvailability
         },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-  
-      if (!newAvailability) {
-        newHorarios.splice(index, 1);
-      } else {
-        newHorarios[index].available = newAvailability;
-      }
-      
-      setHorarios(newHorarios);
-  
+
+      await refresh();
+
     } catch (error) {
       console.error('Erro ao atualizar horário:', error);
-      const restoredHorarios = [...horarios];
-      restoredHorarios[index].available = !newAvailability;
-      setHorarios(restoredHorarios);
+      updateLocal(prev => prev.map((h, i) => 
+        i === index ? {...h, available: !newAvailability} : h
+      ));
     }
   };
+
+  if (error) return <Text>Erro: {error}</Text>;
+
 
   return (
     <View style={styles.container}>

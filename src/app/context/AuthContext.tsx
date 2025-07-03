@@ -1,3 +1,4 @@
+// src/app/context/AuthContext.tsx
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
@@ -18,19 +19,17 @@ interface LogoConfig {
 
 interface AuthState {
   token: string | null;
-  authenticated: boolean | null;
+  authenticated: boolean;
   user: User | null;
-  logoConfig: LogoConfig;
+  logoConfig: {
+    url: string;
+    appName: string;
+  };
 }
 
 interface AuthProps {
   authState: AuthState;
-  user: User | null;
   isLoading: boolean;
-  logoUrl: {
-    url: string | null;
-    appName: string;
-  };
   onRegister: (
     name: string,
     email: string,
@@ -38,14 +37,13 @@ interface AuthProps {
     password: string
   ) => Promise<any>;
   onLogin: (email: string, password: string) => Promise<any>;
-  onLogout: () => Promise<any>;
+  onLogout: () => Promise<void>;
   onConfirm: (email: string, code: string) => Promise<any>;
   refreshLogo: () => Promise<void>;
 }
 
 const TOKEN_KEY = "my-jwt";
-//export const API_URL = "https://ifms.pro.br:2008";
-export const API_URL = "http://192.168.101.21:3000";
+export const API_URL = "http://179.191.13.98:2065";
 const AuthContext = createContext<AuthProps | undefined>(undefined);
 
 export const useAuth = () => {
@@ -63,20 +61,21 @@ export const AuthProvider = ({ children }: any) => {
     user: null,
     logoConfig: {
       appName: "Agenda Cotad",
-      logoUrl: "",
+      url: `${API_URL}/files/logo.png`, // URL padrão
     },
   });
+
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshLogo = async () => {
     try {
       const response = await axios.get(`${API_URL}/config`);
-      setAuthState((prev) => ({
+      setAuthState(prev => ({
         ...prev,
-        logoUrl: {
-          url: response.data.logoUrl,
+        logoConfig: {
           appName: response.data.appName || "Agenda Cotad",
-        },
+          url: response.data.logoUrl || `${API_URL}/files/logo.png`
+        }
       }));
     } catch (error) {
       console.error("Erro ao atualizar logo:", error);
@@ -84,67 +83,51 @@ export const AuthProvider = ({ children }: any) => {
   };
 
   useEffect(() => {
-    console.log("Iniciando carga do AuthProvider");
-    const loadToken = async () => {
+    const initializeAuth = async () => {
       try {
-        setIsLoading(true);
-        const token = await SecureStore.getItemAsync(TOKEN_KEY);
+        const [token, config] = await Promise.all([
+          SecureStore.getItemAsync(TOKEN_KEY),
+          axios.get(`${API_URL}/config`)
+        ]);
 
-        const configResponse = await axios.get(`${API_URL}/config`);
-        if (token) {
-          const userInfo = await fetchUserInfo(token);
-          setAuthState({
-            token,
-            authenticated: true,
-            user: userInfo,
-            logoConfig: configResponse.data,
-          });
-        } else {
-          setAuthState((prev) => ({
-            ...prev,
-            logoConfig: configResponse.data,
-          }));
-        }
-      } catch (error) {
-        setAuthState({
-          token: null,
-          authenticated: false,
+        const newAuthState: AuthState = {
+          token,
+          authenticated: !!token,
           user: null,
           logoConfig: {
-            appName: "Agenda Cotad",
-            logoUrl: "",
-          },
-        });
+            appName: config.data.appName || "Agenda Cotad",
+            url: config.data.logoUrl || `${API_URL}/files/logo.png`
+          }
+        };
+
+        if (token) {
+          try {
+            const user = await fetchUserInfo(token);
+            newAuthState.user = user;
+          } catch (error) {
+            console.error("Erro ao validar token:", error);
+            await SecureStore.deleteItemAsync(TOKEN_KEY);
+            newAuthState.token = null;
+            newAuthState.authenticated = false;
+          }
+        }
+
+        setAuthState(newAuthState);
+      } catch (error) {
+        console.error("Erro na inicialização:", error);
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
-    loadToken();
+    initializeAuth();
   }, []);
 
-  const fetchUserInfo = async (token: string): Promise<User | null> => {
-    try {
-      const response = await axios.get(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
-    } catch (e) {
-      console.error("Erro ao buscar informações do usuário:", e);
-      return null;
-    }
-  };
-
-  const fetchConfig = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/config`);
-      setAuthState((prev) => ({
-        ...prev,
-        logoConfig: response.data,
-      }));
-    } catch (error) {
-      console.error("Erro ao buscar configurações:", error);
-    }
+  const fetchUserInfo = async (token: string): Promise<User> => {
+    const response = await axios.get(`${API_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
   };
 
   const register = async (
@@ -154,94 +137,77 @@ export const AuthProvider = ({ children }: any) => {
     password: string
   ) => {
     try {
-      const result = await axios.post(`${API_URL}/auth/register`, {
+      const response = await axios.post(`${API_URL}/auth/register`, {
         name,
-        email,
+        email: email.toLowerCase(),
         contato,
-        password,
+        password
       });
-      return result;
-    } catch (e) {
-      const errorMsg =
-        (e as any).response?.data?.message || "Erro ao registrar.";
-      return { error: true, msg: `Falha no registro: ${errorMsg}` };
+      
+      return response.data;
+    } catch (error: any) {
+      return {
+        error: true,
+        msg: error.response?.data?.message || "Erro no registro"
+      };
     }
+  };
+
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        email: email.toLowerCase(),
+        password
+      });
+
+      const { access_token } = response.data;
+      await SecureStore.setItemAsync(TOKEN_KEY, access_token);
+      
+      const user = await fetchUserInfo(access_token);
+      
+      setAuthState(prev => ({
+        ...prev,
+        token: access_token,
+        authenticated: true,
+        user
+      }));
+
+      router.replace(user.professor ? "/professor" : "/aluno");
+      return { success: true };
+    } catch (error: any) {
+      return {
+        error: true,
+        msg: error.response?.data?.message || "Erro no login"
+      };
+    }
+  };
+
+  const logout = async () => {
+    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    setAuthState({
+      token: null,
+      authenticated: false,
+      user: null,
+      logoConfig: {
+        appName: "Agenda Cotad",
+        url: `${API_URL}/files/logo.png`
+      }
+    });
+    router.replace("/login");
   };
 
   const confirm = async (email: string, code: string) => {
     try {
       const response = await axios.post(`${API_URL}/auth/confirm`, {
         email,
-        code,
+        code
       });
       return response.data;
-    } catch (error) {
-      return { error: true, msg: "Código inválido ou expirado" };
-    }
-  };
-
-  const login = async (email: string, password: string) => {
-    try {
-      const result = await axios.post(`${API_URL}/auth/login`, {
-        email,
-        password,
-      });
-      const token = result.data.access_token;
-
-      if (!token) throw new Error("Token JWT não retornado.");
-
-      await SecureStore.setItemAsync(TOKEN_KEY, token);
-      const userInfo = await fetchUserInfo(token);
-
-      if (!userInfo) throw new Error("Falha ao obter informações do usuário");
-
-      setAuthState({
-        token: token,
-        authenticated: true,
-        user: null,
-        logoConfig: {
-          appName: "Agenda Cotad",
-          logoUrl: "",
-        },
-      });
-      if (userInfo.professor) {
-        router.replace("/professor");
-      } else {
-        router.replace("/aluno");
-      }
-
-      return result;
-    } catch (e) {
-      const errorMsg =
-        (e as any).response?.data?.message || "Erro ao fazer login.";
-      return { error: true, msg: `Falha no login: ${errorMsg}` };
-    }
-  };
-
-  const logout = async () => {
-    console.log("Iniciando logout..."); 
-    try {
-      console.log("Removendo token...");
-      await SecureStore.deleteItemAsync(TOKEN_KEY);
-
-      console.log("Limpando headers...");
-      delete axios.defaults.headers.common["Authorization"];
-
-      console.log("Atualizando estado...");
-      setAuthState({
-        token: null,
-        authenticated: false,
-        user: null,
-        logoConfig: {
-          appName: "Agenda Cotad",
-          logoUrl: "",
-        },
-      });
-
-      console.log("Navegando para login...");
-      router.replace("/login");
-    } catch (error) {
-      console.error("Erro completo no logout:", error);
+    } catch (error: any) {
+      return {
+        error: true,
+        msg: error.response?.data?.message || "Erro na confirmação"
+      };
     }
   };
 
@@ -249,22 +215,15 @@ export const AuthProvider = ({ children }: any) => {
     <AuthContext.Provider
       value={{
         authState,
-        user: authState.user,
-        logoUrl: {
-          url: authState.logoConfig.logoUrl,
-          appName: authState.logoConfig.appName,
-        },
-        isLoading, 
+        isLoading,
         refreshLogo,
         onRegister: register,
         onLogin: login,
         onLogout: logout,
-        onConfirm: confirm,
+        onConfirm: confirm
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
-
-export default AuthContext;
