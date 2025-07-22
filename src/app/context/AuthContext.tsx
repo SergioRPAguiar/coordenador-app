@@ -1,4 +1,3 @@
-// src/app/context/AuthContext.tsx
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
@@ -40,10 +39,16 @@ interface AuthProps {
   onLogout: () => Promise<void>;
   onConfirm: (email: string, code: string) => Promise<any>;
   refreshLogo: () => Promise<void>;
+  onUpdatePassword?: (
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<void>;
+  onUpdateContact?: (newContact: string) => Promise<void>;
 }
 
 const TOKEN_KEY = "my-jwt";
-export const API_URL = "http://179.191.13.98:2065";
+export const API_URL = "http://ifms.pro.br:2065";
+//export const API_URL = "http://192.168.200.31:3000";
 const AuthContext = createContext<AuthProps | undefined>(undefined);
 
 export const useAuth = () => {
@@ -61,7 +66,7 @@ export const AuthProvider = ({ children }: any) => {
     user: null,
     logoConfig: {
       appName: "Agenda Cotad",
-      url: `${API_URL}/files/logo.png`, // URL padrão
+      url: `${API_URL}/files/logo.png`,
     },
   });
 
@@ -70,15 +75,70 @@ export const AuthProvider = ({ children }: any) => {
   const refreshLogo = async () => {
     try {
       const response = await axios.get(`${API_URL}/config`);
-      setAuthState(prev => ({
+      setAuthState((prev) => ({
         ...prev,
         logoConfig: {
           appName: response.data.appName || "Agenda Cotad",
-          url: response.data.logoUrl || `${API_URL}/files/logo.png`
-        }
+          url: response.data.logoUrl || `${API_URL}/files/logo.png`,
+        },
       }));
     } catch (error) {
       console.error("Erro ao atualizar logo:", error);
+    }
+  };
+  const onUpdatePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/auth/update-password`,
+        { currentPassword, newPassword },
+        {
+          headers: {
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Erro ao atualizar a senha";
+      throw new Error(errorMessage);
+    }
+  };
+
+  const onUpdateContact = async (newContact: string) => {
+    try {
+      const userId = authState.user?._id;
+      if (!userId) throw new Error("Usuário não autenticado");
+
+      const response = await axios.patch(
+        `${API_URL}/user/${userId}/contato`,
+        {
+          contato: newContact,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
+      );
+
+      setAuthState((prev) => ({
+        ...prev,
+        user: {
+          ...prev.user!,
+          contato: newContact,
+        },
+      }));
+
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        (error as any).response?.data?.message || "Erro ao atualizar o contato";
+      throw new Error(errorMessage);
     }
   };
 
@@ -87,7 +147,7 @@ export const AuthProvider = ({ children }: any) => {
       try {
         const [token, config] = await Promise.all([
           SecureStore.getItemAsync(TOKEN_KEY),
-          axios.get(`${API_URL}/config`)
+          axios.get(`${API_URL}/config`),
         ]);
 
         const newAuthState: AuthState = {
@@ -96,8 +156,8 @@ export const AuthProvider = ({ children }: any) => {
           user: null,
           logoConfig: {
             appName: config.data.appName || "Agenda Cotad",
-            url: config.data.logoUrl || `${API_URL}/files/logo.png`
-          }
+            url: config.data.logoUrl || `${API_URL}/files/logo.png`,
+          },
         };
 
         if (token) {
@@ -125,7 +185,7 @@ export const AuthProvider = ({ children }: any) => {
 
   const fetchUserInfo = async (token: string): Promise<User> => {
     const response = await axios.get(`${API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
   };
@@ -141,14 +201,14 @@ export const AuthProvider = ({ children }: any) => {
         name,
         email: email.toLowerCase(),
         contato,
-        password
+        password,
       });
-      
+
       return response.data;
     } catch (error: any) {
       return {
         error: true,
-        msg: error.response?.data?.message || "Erro no registro"
+        msg: error.response?.data?.message || "Erro no registro",
       };
     }
   };
@@ -157,19 +217,19 @@ export const AuthProvider = ({ children }: any) => {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, {
         email: email.toLowerCase(),
-        password
+        password,
       });
 
       const { access_token } = response.data;
       await SecureStore.setItemAsync(TOKEN_KEY, access_token);
-      
+
       const user = await fetchUserInfo(access_token);
-      
-      setAuthState(prev => ({
+
+      setAuthState((prev) => ({
         ...prev,
         token: access_token,
         authenticated: true,
-        user
+        user,
       }));
 
       router.replace(user.professor ? "/professor" : "/aluno");
@@ -177,7 +237,7 @@ export const AuthProvider = ({ children }: any) => {
     } catch (error: any) {
       return {
         error: true,
-        msg: error.response?.data?.message || "Erro no login"
+        msg: error.response?.data?.message || "Erro no login",
       };
     }
   };
@@ -190,8 +250,8 @@ export const AuthProvider = ({ children }: any) => {
       user: null,
       logoConfig: {
         appName: "Agenda Cotad",
-        url: `${API_URL}/files/logo.png`
-      }
+        url: `${API_URL}/files/logo.png`,
+      },
     });
     router.replace("/login");
   };
@@ -200,13 +260,13 @@ export const AuthProvider = ({ children }: any) => {
     try {
       const response = await axios.post(`${API_URL}/auth/confirm`, {
         email,
-        code
+        code,
       });
       return response.data;
     } catch (error: any) {
       return {
         error: true,
-        msg: error.response?.data?.message || "Erro na confirmação"
+        msg: error.response?.data?.message || "Erro na confirmação",
       };
     }
   };
@@ -220,7 +280,9 @@ export const AuthProvider = ({ children }: any) => {
         onRegister: register,
         onLogin: login,
         onLogout: logout,
-        onConfirm: confirm
+        onConfirm: confirm,
+        onUpdateContact,
+        onUpdatePassword,
       }}
     >
       {children}

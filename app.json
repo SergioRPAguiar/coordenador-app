@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "agenda-cotad",
-    "slug": "agenda-cotad",
+    "slug": "coordenador-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -57,8 +57,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "4f1f0237-4ba5-4d3f-8c20-7b46d82a73d9"
+        "projectId": "48b8cb51-5f53-4ae3-a71c-28ca05925730"
       }
-    }
+    },
+    "owner": "sergioaguiar"
   }
 }

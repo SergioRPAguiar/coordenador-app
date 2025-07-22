@@ -1,16 +1,32 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
-import axios from 'axios';
-import { API_URL } from '@/app/context/AuthContext';
-import Botao from './Botao';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import axios from "axios";
+import { API_URL } from "@/app/context/AuthContext";
+import Botao from "./Botao";
 
-const HorariosDisponiveis = ({ horarios, isProfessor, selectedDate }: { horarios: { [key: string]: string[] }, isProfessor: boolean, selectedDate: string }) => {
+const HorariosDisponiveis = ({
+  horarios,
+  isProfessor,
+  selectedDate,
+}: {
+  horarios: { [key: string]: string[] };
+  isProfessor: boolean;
+  selectedDate: string;
+}) => {
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
-  const [motivo, setMotivo] = useState('');
+  const [motivo, setMotivo] = useState("");
 
   const handleConfirmHorario = async () => {
     try {
-      const url = isProfessor ? `${API_URL}/professor/set-horario` : `${API_URL}/meeting`;
+      const url = isProfessor
+        ? `${API_URL}/professor/set-horario`
+        : `${API_URL}/meeting`;
       const response = await axios.post(url, {
         date: selectedDate,
         time: selectedHorario,
@@ -54,7 +70,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 5,
     padding: 10,

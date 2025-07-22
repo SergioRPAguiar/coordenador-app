@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,13 +12,12 @@ import {
 } from "react-native";
 import { Checkbox } from "react-native-paper";
 import axios from "axios";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { API_URL, useAuth } from "@/app/context/AuthContext";
 import { useDate } from "@/app/context/DateContext";
 import Botao from "@/components/Botao";
 import BackButton from "@/components/BackButton";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import dayjs from "dayjs";
 
 interface Horario {
   timeSlot: string;
@@ -43,29 +42,38 @@ const HorariosDia = () => {
     }
   }, [date]);
 
-  const fetchHorarios = async (selectedDate: string) => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/schedule/available/${selectedDate}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const sortedHorarios = response.data.sort((a: Horario, b: Horario) =>
-        a.timeSlot.localeCompare(b.timeSlot)
-      );
-      setHorarios(sortedHorarios);
-    } catch (error) {
-      console.error("Erro ao buscar horários:", error);
-    }
-  };
+  const fetchHorarios = useCallback(
+    async (data: string) => {
+      try {
+        const response = await axios.get(
+          `${API_URL}/schedule/available/${data}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const sortedHorarios = response.data.sort((a: Horario, b: Horario) =>
+          a.timeSlot.localeCompare(b.timeSlot)
+        );
+        setHorarios(sortedHorarios);
+      } catch (error) {
+        console.error("Erro ao buscar horários:", error);
+      }
+    },
+    [token]
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (selectedDate) {
+        fetchHorarios(selectedDate);
+      }
+    }, [fetchHorarios, selectedDate])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await fetchHorarios(selectedDate);
+      if (selectedDate) {
+        await fetchHorarios(selectedDate);
+      }
     } catch (error) {
       console.error("Erro ao atualizar:", error);
     } finally {
@@ -73,18 +81,8 @@ const HorariosDia = () => {
     }
   };
 
-  useEffect(() => {
-    if (selectedDate) {
-      fetchHorarios(selectedDate);
-    }
-  }, [selectedDate]);
-
   const confirmarReuniao = async () => {
-    if (!authState.user) {
-      console.error("Usuário não autenticado");
-      return;
-    }
-
+    if (!authState.user) return;
     if (!motivo.trim()) {
       setMotivoInvalido(true);
       return;
@@ -94,34 +92,38 @@ const HorariosDia = () => {
       await axios.post(
         `${API_URL}/meeting`,
         {
-          date: selectedDate,
+          date: dayjs(selectedDate).format("YYYY-MM-DD"),
           timeSlot: selectedHorario,
           reason: motivo,
           userId: authState.user._id,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${authState.token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${authState.token}` } }
       );
 
-      // Se sucesso, voltar para o calendário
-      router.replace("/aluno");
+      setSelectedHorario(null);
+      setMotivo("");
+      setMotivoInvalido(false);
+
+      if (selectedDate) await fetchHorarios(selectedDate);
+
+      Alert.alert(
+        "Reunião Marcada",
+        `Reunião marcada com sucesso para ${dayjs(selectedDate).format(
+          "DD/MM/YYYY"
+        )} às ${selectedHorario}`
+      );
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (
-          error.response?.status === 400 &&
-          error.response.data.message === "Horário indisponível"
-        ) {
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        const msg = error.response.data.message;
+
+        if (msg === "Horário indisponível") {
           Alert.alert(
             "Horário Indisponível",
-            "Este horário foi reservado por outro aluno. Por favor escolha outro.",
+            "Este horário foi reservado por outro aluno.",
             [
               {
                 text: "OK",
                 onPress: () => {
-                  // Atualizar lista de horários
                   fetchHorarios(selectedDate);
                   setSelectedHorario(null);
                   setMotivo("");
@@ -131,19 +133,25 @@ const HorariosDia = () => {
           );
           return;
         }
+
+        if (msg === "Reuniões não podem ser marcadas no Domingo") {
+          Alert.alert(
+            "Agendamento não permitido",
+            "Reuniões não podem ser marcadas no domingo."
+          );
+          return;
+        }
       }
 
-      console.error("Erro ao marcar reunião:", error);
       Alert.alert(
         "Erro",
         "Não foi possível marcar a reunião. Tente novamente."
       );
     }
   };
-  const handleSelectHorario = (horario: string) => {
-    // Verificar se o horário ainda está disponível na lista atual
-    const horarioSelecionado = horarios.find((h) => h.timeSlot === horario);
 
+  const handleSelectHorario = (horario: string) => {
+    const horarioSelecionado = horarios.find((h) => h.timeSlot === horario);
     if (!horarioSelecionado?.available) {
       Alert.alert(
         "Horário Indisponível",
@@ -151,7 +159,6 @@ const HorariosDia = () => {
       );
       return;
     }
-
     setSelectedHorario(selectedHorario === horario ? null : horario);
     setMotivoInvalido(false);
     setMotivo("");
@@ -165,23 +172,25 @@ const HorariosDia = () => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
       <BackButton />
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         <Text style={styles.headerText}>Horários Disponíveis</Text>
         <Text style={styles.dateText}>
-          Data selecionada:{" "}
-          {format(new Date(selectedDate), "dd/MM/yyyy", { locale: ptBR })}
+          {dayjs(selectedDate).format("DD/MM/YYYY")}
         </Text>
+
         {horarios.length > 0 ? (
           horarios.map((horario, index) => (
-            <View key={index} style={styles.horarioContainer}>
+            <View key={index} style={styles.card}>
               <View style={styles.row}>
-                <Text style={styles.horarioText}>{horario.timeSlot}</Text>
+                <Text style={styles.time}>{horario.timeSlot}</Text>
                 <Checkbox
                   status={
                     selectedHorario === horario.timeSlot
@@ -194,22 +203,17 @@ const HorariosDia = () => {
                 />
               </View>
               {selectedHorario === horario.timeSlot && (
-                <View style={styles.motivoContainer}>
+                <View style={styles.formSection}>
                   <TextInput
-                    style={[
-                      styles.input,
-                      motivoInvalido && { borderColor: "red" },
-                    ]}
+                    style={[styles.input, motivoInvalido && styles.inputError]}
                     placeholder="Motivo da reunião"
                     value={motivo}
                     onChangeText={setMotivo}
-                    multiline
                     onFocus={handleInputFocus}
+                    multiline
                   />
                   {motivoInvalido && (
-                    <Text style={styles.errorText}>
-                      Motivo obrigatório. Por favor, preencha este campo.
-                    </Text>
+                    <Text style={styles.errorText}>Campo obrigatório</Text>
                   )}
                   <Botao title="Marcar Reunião" onPress={confirmarReuniao} />
                 </View>
@@ -217,18 +221,9 @@ const HorariosDia = () => {
             </View>
           ))
         ) : (
-          <Text style={styles.noHorariosText}>
-            Nenhum horário disponível para esta data.
-          </Text>
+          <Text style={styles.noSlots}>Nenhum horário disponível</Text>
         )}
       </ScrollView>
-
-      <View style={styles.footerContainer}>
-        <Botao
-          title="Voltar para o Calendário"
-          onPress={() => router.replace("/aluno")}
-        />
-      </View>
     </KeyboardAvoidingView>
   );
 };
@@ -236,83 +231,69 @@ const HorariosDia = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#f9f9f9",
+    padding: 20,
+  },
+  scrollContainer: {
+    paddingBottom: 60,
   },
   headerText: {
-    paddingTop: 30,
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 5,
-    textAlign: "center",
     color: "#008739",
+    textAlign: "center",
+    marginVertical: 10,
   },
   dateText: {
-    fontSize: 15,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontSize: 16,
+    color: "#333",
     textAlign: "center",
-    paddingBottom: 10,
+    marginBottom: 20,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   row: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    width: "100%",
+    alignItems: "center",
   },
-  horarioContainer: {
-    marginBottom: 15,
-    padding: 10,
-    width: "100%",
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: "#f9f9f9",
-  },
-  horarioText: {
+  time: {
     fontSize: 18,
     color: "#333",
-    flex: 1,
   },
-  motivoContainer: {
+  formSection: {
     marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-    alignItems: "center",
   },
   input: {
-    borderColor: "#ccc",
     borderWidth: 1,
+    borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
+    backgroundColor: "#fff",
     marginBottom: 10,
-    width: "100%",
+  },
+  inputError: {
+    borderColor: "red",
   },
   errorText: {
     color: "red",
     fontSize: 14,
     marginBottom: 10,
   },
-  noHorariosText: {
-    fontSize: 16,
-    color: "gray",
-    marginTop: 20,
+  noSlots: {
     textAlign: "center",
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingBottom: 100,
-    paddingTop: 10,
-  },
-  footerContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 10,
-    backgroundColor: "#fff",
-    alignItems: "center",
+    color: "#999",
+    fontSize: 16,
+    marginTop: 30,
   },
 });
 

@@ -1,7 +1,12 @@
 import React from "react";
 import { Stack } from "expo-router";
 import { AuthProvider } from "./context/AuthContext";
-import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_700Bold } from "@expo-google-fonts/poppins";
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_700Bold,
+} from "@expo-google-fonts/poppins";
 import { DateProvider } from "./context/DateContext";
 import { Text, View } from "react-native";
 
@@ -14,7 +19,7 @@ export default function RootLayout() {
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Carregando fontes...</Text>
       </View>
     );

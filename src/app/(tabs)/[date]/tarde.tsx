@@ -1,57 +1,82 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Alert } from "react-native";
+import React from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Alert,
+  RefreshControl,
+} from "react-native";
 import { Checkbox } from "react-native-paper";
 import axios from "axios";
-import { useRouter, useLocalSearchParams, router } from "expo-router";
+import { router } from "expo-router";
 import { API_URL, useAuth } from "@/app/context/AuthContext";
 import { useDate } from "@/app/context/DateContext";
 import Botao from "@/components/Botao";
 import BackButton from "@/components/BackButton";
-import { useHorarios } from '@/hooks/useHorarios';
-import { slots } from '@/utils/horariosSlots';
+import { useHorarios } from "@/hooks/useHorarios";
+import { slots } from "@/utils/horariosSlots";
+import dayjs from "dayjs";
+import "dayjs/locale/pt-br";
+
+dayjs.locale("pt-br");
 
 const Tarde = () => {
   const { authState } = useAuth();
   const { selectedDate } = useDate();
   const token = authState?.token;
-  
-  const { 
-    horarios,  
-    error, 
-    refresh,
-    updateLocal
-  } = useHorarios(selectedDate, token, slots.tarde);
 
+  const { horarios, error, refresh, updateLocal } = useHorarios(
+    selectedDate,
+    token,
+    slots.tarde
+  );
 
   const toggleDisponibilidade = async (index: number) => {
+    if (!authState?.user) {
+      Alert.alert("Erro", "Usuário não autenticado.");
+      return;
+    }
     if (!token) return;
-    
+
     const newAvailability = !horarios[index].available;
 
     try {
-      // Atualização otimista
-      updateLocal(prev => prev.map((h, i) => 
-        i === index ? {...h, available: newAvailability} : h
-      ));
+      updateLocal((prev) =>
+        prev.map((h, i) =>
+          i === index ? { ...h, available: newAvailability } : h
+        )
+      );
 
       await axios.post(
         `${API_URL}/schedule`,
         {
           date: selectedDate,
           timeSlot: horarios[index].time,
-          available: newAvailability
+          available: newAvailability,
+          professorId: authState?.user._id,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       await refresh();
+    } catch (error: any) {
+      updateLocal((prev) =>
+        prev.map((h, i) =>
+          i === index ? { ...h, available: !newAvailability } : h
+        )
+      );
 
-    } catch (error) {
-      console.error('Erro ao atualizar horário:', error);
-      updateLocal(prev => prev.map((h, i) => 
-        i === index ? {...h, available: !newAvailability} : h
-      ));
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        Alert.alert("Horário reservado", error.response.data.message);
+      } else {
+        Alert.alert("Erro", "Erro ao atualizar horário");
+      }
     }
+  };
+
+  const onRefresh = async () => {
+    await refresh();
   };
 
   if (error) return <Text>Erro: {error}</Text>;
@@ -59,28 +84,34 @@ const Tarde = () => {
   return (
     <View style={styles.container}>
       <BackButton />
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl refreshing={false} onRefresh={onRefresh} />
+        }
+      >
         <Text style={styles.headerText}>Horários da Tarde</Text>
-        <Text style={styles.headerText2}>Data selecionada: {selectedDate}</Text>
+        <Text style={styles.dateText}>
+          {dayjs(selectedDate).format("DD/MM/YYYY")}
+        </Text>
 
-        {horarios.map((horario, index) => (
-          <View key={index} style={styles.horarioContainer}>
-            <Text style={styles.text}>{horario.time}</Text>
-            <Checkbox
-              status={horario.available ? "checked" : "unchecked"}
-              onPress={() => toggleDisponibilidade(index)}
-              color={horario.available ? "#008739" : "#ccc"}
-            />
-          </View>
-        ))}
+        {horarios.length > 0 ? (
+          horarios.map((horario, index) => (
+            <View key={index} style={styles.card}>
+              <View style={styles.row}>
+                <Text style={styles.time}>{horario.time}</Text>
+                <Checkbox
+                  status={horario.available ? "checked" : "unchecked"}
+                  onPress={() => toggleDisponibilidade(index)}
+                  color={horario.available ? "#008739" : "#ccc"}
+                />
+              </View>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noSlots}>Nenhum horário cadastrado</Text>
+        )}
       </ScrollView>
-
-      <View style={styles.footerContainer}>
-        <Botao
-          title="Voltar para o Calendário"
-          onPress={() => router.replace("/professor")}
-        />
-      </View>
     </View>
   );
 };
@@ -88,49 +119,53 @@ const Tarde = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#f9f9f9",
+    padding: 20,
   },
   scrollContainer: {
-    padding: 20,
-    paddingBottom: 10,
+    paddingBottom: 60,
   },
   headerText: {
-    paddingTop: 30,
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
     color: "#008739",
-  },
-  headerText2: {
-    fontSize: 15,
-    fontWeight: "bold",
-    marginBottom: 20,
     textAlign: "center",
-    borderBottomColor: "#7c7c7c",
-    borderBottomWidth: 1,
-    paddingBottom: 10,
+    marginVertical: 10,
   },
-  horarioContainer: {
+  dateText: {
+    fontSize: 16,
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
-    padding: 10,
-    borderColor: "#ccc",
-    backgroundColor: "#f9f9f9",
-    borderWidth: 1,
-    borderRadius: 8,
   },
-  text: {
+  time: {
     fontSize: 18,
+    color: "#333",
   },
-  footerContainer: {
-    padding: 10,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    borderTopColor: "#ddd",
+  noSlots: {
+    textAlign: "center",
+    color: "#999",
+    fontSize: 16,
+    marginTop: 30,
+  },
+  footer: {
+    marginTop: 10,
   },
 });
 

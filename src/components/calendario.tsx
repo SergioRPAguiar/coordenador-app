@@ -1,70 +1,131 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Calendar } from 'react-native-calendars';
-import { useRouter } from 'expo-router';
-import { useAuth } from '@/app/context/AuthContext';
-import { useDate } from '@/app/context/DateContext';
-import dayjs from 'dayjs';
+import React from "react";
+import { View, StyleSheet, Pressable, Text } from "react-native";
+import { Calendar, LocaleConfig } from "react-native-calendars";
+import { useRouter } from "expo-router";
+import { useDate } from "@/app/context/DateContext";
+import dayjs from "dayjs";
+
+LocaleConfig.locales["pt-br"] = {
+  monthNames: [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ],
+  monthNamesShort: [
+    "Jan",
+    "Fev",
+    "Mar",
+    "Abr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Set",
+    "Out",
+    "Nov",
+    "Dez",
+  ],
+  dayNames: [
+    "Domingo",
+    "Segunda",
+    "Terça",
+    "Quarta",
+    "Quinta",
+    "Sexta",
+    "Sábado",
+  ],
+  dayNamesShort: ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"],
+  today: "Hoje",
+};
+LocaleConfig.defaultLocale = "pt-br";
 
 const Calendario = ({ isProfessor }: { isProfessor: boolean }) => {
   const router = useRouter();
-  const { user } = useAuth();
   const { selectedDate, setSelectedDate } = useDate();
 
-  const getCurrentLocalDateString = () => {
-    return dayjs().format('YYYY-MM-DD');
-  };
-
-  const minDate = dayjs(getCurrentLocalDateString())
-    .add(1, 'day')
-    .format('YYYY-MM-DD');
+  const minDate = dayjs().add(1, "day").format("YYYY-MM-DD");
+  const today = dayjs().format("YYYY-MM-DD");
 
   const handleDayPress = (day: any) => {
-    const selectedDate = day.dateString;
-    setSelectedDate(selectedDate);
-
+    setSelectedDate(day.dateString);
     if (isProfessor) {
-      router.push(`/(tabs)/${selectedDate}`);
+      router.push(`/(tabs)/${day.dateString}`);
     } else {
-      router.push(`/aluno/${selectedDate}`);
+      router.push(`/aluno/${day.dateString}`);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Selecione um dia</Text>
       <Calendar
         onDayPress={handleDayPress}
-        markedDates={{
-          [selectedDate]: { 
-            selected: true, 
-            selectedColor: '#00adf5',
-            selectedTextColor: '#ffffff'
-          },
+        dayComponent={({ date }) => {
+          const dateStr = date.dateString;
+          const isSelected = selectedDate === dateStr;
+          const isToday = dateStr === today;
+          const isDisabled = dayjs(dateStr).isBefore(minDate);
+
+          return (
+            <Pressable
+              onPress={() =>
+                !isDisabled && handleDayPress({ dateString: dateStr })
+              }
+              disabled={isDisabled}
+              style={{
+                backgroundColor: isSelected ? "#008739" : "transparent",
+                borderColor: isToday ? "#008739" : "transparent",
+                borderWidth: isToday ? 2 : 0,
+                borderRadius: 19,
+                width: 38,
+                height: 38,
+                alignItems: "center",
+                justifyContent: "center",
+                marginHorizontal: 3,
+                marginVertical: 6,
+              }}
+            >
+              <Text
+                style={{
+                  color: isSelected ? "#fff" : isDisabled ? "#b0b0b0" : "#222",
+                  fontWeight: "600",
+                }}
+              >
+                {date.day}
+              </Text>
+            </Pressable>
+          );
         }}
         minDate={minDate}
         disableAllTouchEventsForDisabledDays
         theme={{
-          calendarBackground: '#ffffff',
-          textSectionTitleColor: '#000000',
-          selectedDayBackgroundColor: '#00adf5',
-          selectedDayTextColor: '#ffffff',
-          todayTextColor: '#008739',
-          dayTextColor: '#2d4150',
-          textDisabledColor: '#d3d3d3',
-          arrowColor: '#000000',
-          monthTextColor: '#000000',
-          'stylesheet.day.basic': {
-            base: {
-              width: 32,
-              height: 32,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 16,
-              backgroundColor: 'transparent',
+          calendarBackground: "#ffffff",
+          textSectionTitleColor: "#008739",
+          arrowColor: "#000",
+          monthTextColor: "#000",
+          textMonthFontSize: 22,
+          textMonthFontWeight: "700",
+          textDayHeaderFontSize: 14,
+          textDayHeaderFontWeight: "600",
+          todayTextColor: "#008739",
+          "stylesheet.calendar.header": {
+            week: {
+              flexDirection: "row",
+              justifyContent: "space-around",
+              paddingTop: 6,
+              backgroundColor: "transparent",
             },
           },
         }}
+        style={styles.calendar}
       />
     </View>
   );
@@ -72,18 +133,21 @@ const Calendario = ({ isProfessor }: { isProfessor: boolean }) => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    elevation: 5,
-    marginVertical: 10,
+    flex: 1,
+    paddingHorizontal: 4,
+    paddingTop: 4,
   },
-  title: {
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#2d4150',
+  calendar: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
 });
 

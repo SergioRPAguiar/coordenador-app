@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   ScrollView,
   View,
-  Image,
   StyleSheet,
   Alert,
   Text,
@@ -14,21 +13,32 @@ import * as yup from "yup";
 import { API_URL, useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "expo-router";
 import { theme } from "@/theme";
-import Botao from "@/components/Botao";
 import Input from "@/components/Input";
-import { useSegments } from "expo-router";
 import axios from "axios";
 import DynamicLogo from "@/components/DynamicLogo";
+import BotaoComLoading from "@/components/BotaoComLoading";
+import { useFocusEffect } from "@react-navigation/native";
 
 const schema = yup.object({
   name: yup.string().required("Informe o nome"),
   email: yup.string().email("Email inválido").required("Informe o email"),
-  contato: yup.string().required("Informe o contato"),
+  contato: yup
+    .string()
+    .required("Informe o contato")
+    .matches(/^\d{11}$/, "Contato deve ter 11 dígitos numéricos"),
   password: yup
     .string()
     .min(6, "A senha deve ter pelo menos 6 caracteres")
     .required("Informe a senha"),
 });
+
+const formatPhone = (value: string) => {
+  const cleaned = value.replace(/\D/g, "").slice(0, 11);
+
+  if (cleaned.length < 3) return cleaned;
+  if (cleaned.length < 8) return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+  return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
+};
 
 const Register = () => {
   const {
@@ -39,10 +49,16 @@ const Register = () => {
     resolver: yupResolver(schema),
   });
 
-  const { authState } = useAuth();
   const { onRegister } = useAuth();
   const router = useRouter();
   const [emailError, setEmailError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsLoading(false);
+    }, [])
+  );
 
   const handleRegister = async (data: {
     name: string;
@@ -52,6 +68,7 @@ const Register = () => {
   }) => {
     try {
       setEmailError("");
+      setIsLoading(true);
       const result = await onRegister!(
         data.name,
         data.email,
@@ -80,11 +97,10 @@ const Register = () => {
       } else {
         Alert.alert("Erro", "Falha no registro");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const segments = useSegments();
-  const currentRoute = segments[0];
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -129,15 +145,22 @@ const Register = () => {
         <Controller
           control={control}
           name="contato"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              placeholder="Contato"
-              onChangeText={onChange}
-              onBlur={onBlur}
-              value={value}
-              errorMessage={errors.contato?.message}
-            />
-          )}
+          render={({ field: { onChange, onBlur, value } }) => {
+            const cleaned = (value || "").replace(/\D/g, "").slice(0, 11);
+            return (
+              <Input
+                placeholder="Contato"
+                keyboardType="phone-pad"
+                value={formatPhone(cleaned)}
+                onChangeText={(text) => {
+                  const onlyDigits = text.replace(/\D/g, "").slice(0, 11);
+                  onChange(onlyDigits);
+                }}
+                onBlur={onBlur}
+                errorMessage={errors.contato?.message}
+              />
+            );
+          }}
         />
 
         <Controller
@@ -146,7 +169,9 @@ const Register = () => {
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               placeholder="Senha"
-              secureTextEntry={true}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
               onChangeText={onChange}
               onBlur={onBlur}
               value={value}
@@ -155,10 +180,18 @@ const Register = () => {
           )}
         />
 
-        <Botao title="Registrar" onPress={handleSubmit(handleRegister)} />
+        <BotaoComLoading
+          title="Registrar"
+          onPress={handleSubmit(handleRegister)}
+          loading={isLoading}
+        />
       </View>
       <View style={styles.linkContainer}>
-        <TouchableOpacity onPress={() => router.push("/login")}>
+        <TouchableOpacity
+          onPress={() => router.push("/login")}
+          disabled={isLoading}
+          style={{ opacity: isLoading ? 0.5 : 1 }}
+        >
           <Text style={styles.linkText}>Já tem conta? Faça login aqui</Text>
         </TouchableOpacity>
       </View>
@@ -178,15 +211,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     marginTop: -20,
-  },
-  text: {
-    marginTop: 10,
-    maxWidth: "80%",
-    textAlign: "center",
-    fontSize: 50,
-    color: "#008739",
-    fontFamily: theme.fontFamily.secondary,
-    lineHeight: 54,
   },
   form: {
     width: "80%",
