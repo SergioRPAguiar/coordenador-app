@@ -93,13 +93,16 @@ src/
 
 ## 📱 Gerando APK e AAB Android
 
-1. Configure seu `eas.json` com credenciais e profiles:
+Existem duas formas de gerar o artefato Android:
+
+### 1. Via Expo EAS (Managed Workflow)
+
+1. Configure seu `eas.json`:
    ```json
    {
      "build": {
        "production": {
-         "android": { "buildType": "apk" },
-         "ios": { "simulator": false }
+         "android": { "buildType": "apk" }
        }
      }
    }
@@ -112,7 +115,31 @@ src/
    ```bash
    eas build --platform android --profile production
    ```
-4. Ao finalizar, baixe o .apk ou .aab pelo link fornecido.
+4. Ao finalizar, baixe o `.apk` ou `.aab` pelo link retornado.
+
+---
+
+### 2. Via Gradle (Bare/Ejected Workflow)
+
+Se o projeto foi ejetado (`expo eject`) para o **Bare Workflow**, você pode usar o Gradle diretamente:
+
+1. Navegue até o diretório `android` no seu projeto:
+   ```bash
+   cd android
+   ```
+2. (Opcional) Limpe builds antigos:
+   ```bash
+   ./gradlew clean
+   ```
+3. Execute o assembleRelease:
+   ```bash
+   ./gradlew assembleRelease
+   ```
+4. Ao finalizar, o APK de release estará em:
+   ```plaintext
+   android/app/build/outputs/apk/release/app-release.apk
+   ```
+5. Você pode então instalar localmente ou distribuir este arquivo.
 
 ---
 
@@ -160,4 +187,3 @@ src/
 ---
 
 > Aproveite o desenvolvimento e consulte o backend para detalhes de API! 🚀
-
