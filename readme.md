@@ -1,4 +1,4 @@
-# Frontend Coordenador App
+# Frontend Coordenador.App
 
 > Aplicativo mobile desenvolvido com **Expo** para Android e iOS, permitindo agendamento de reuniões, login de alunos e professores e integração com o backend.
 
@@ -6,7 +6,7 @@
 
 ## 🚀 Visão Geral
 
-Este repositório contém o cliente mobile do **Coordenador App**, com funcionalidades:
+Este repositório contém o cliente mobile do **Coordenador.App**, com funcionalidades:
 
 - Autenticação (login, registro, confirmação por e-mail)
 - Requisições às rotas do backend (Meetings, Schedule, Users)
@@ -150,24 +150,12 @@ src/
 
 ---
 
-## 🧪 Testes
-
-*(Se aplicável: Jest, Detox, etc.)*
-
----
-
 ## 🤝 Contribuição
 
 1. Fork do projeto
 2. Nova branch: `git checkout -b feat/minha-feature`
 3. Commit e push
 4. Abra um Pull Request
-
----
-
-## 📝 Licença
-
-MIT © Sergio Aguiar
 
 ---
 
