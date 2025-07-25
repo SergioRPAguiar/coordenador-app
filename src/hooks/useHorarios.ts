@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { API_URL } from "@/app/context/AuthContext";
+import { API_URL } from "@/context/AuthContext";
 
 interface Horario {
   time: string;

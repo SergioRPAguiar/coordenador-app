@@ -13,8 +13,8 @@ import {
 import { Checkbox } from "react-native-paper";
 import axios from "axios";
 import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
-import { API_URL, useAuth } from "@/app/context/AuthContext";
-import { useDate } from "@/app/context/DateContext";
+import { API_URL, useAuth } from "@/context/AuthContext";
+import { useDate } from "@/context/DateContext";
 import Botao from "@/components/Botao";
 import BackButton from "@/components/BackButton";
 import dayjs from "dayjs";
@@ -199,7 +199,7 @@ const HorariosDia = () => {
                   }
                   onPress={() => handleSelectHorario(horario.timeSlot)}
                   disabled={!horario.available}
-                  color="#008739"
+                  color="#32A041"
                 />
               </View>
               {selectedHorario === horario.timeSlot && (
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#008739",
+    color: "#32A041",
     textAlign: "center",
     marginVertical: 10,
   },

@@ -10,7 +10,7 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { API_URL, useAuth } from "@/app/context/AuthContext";
+import { API_URL, useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import { theme } from "@/theme";
 import Input from "@/components/Input";
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   linkText: {
-    color: "#008739",
+    color: "#32A041",
     fontSize: 14,
     textDecorationLine: "underline",
     fontFamily: theme.fontFamily.medium,

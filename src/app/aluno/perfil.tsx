@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import BackButton from "@/components/BackButton";
 import { theme } from "@/theme";
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#008739",
+    color: "#32A041",
     marginBottom: 16,
     marginTop: 50,
   },

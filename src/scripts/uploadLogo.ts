@@ -1,6 +1,6 @@
 import axios from "axios";
 import * as FileSystem from "expo-file-system";
-import { API_URL } from "../app/context/AuthContext";
+import { API_URL } from "../context/AuthContext";
 
 const uploadLogo = async () => {
   try {

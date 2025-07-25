@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import axios from "axios";
-import { API_URL } from "@/app/context/AuthContext";
+import { API_URL } from "@/context/AuthContext";
 import Botao from "./Botao";
 
 const HorariosDisponiveis = ({

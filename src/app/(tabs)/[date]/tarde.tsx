@@ -10,8 +10,8 @@ import {
 import { Checkbox } from "react-native-paper";
 import axios from "axios";
 import { router } from "expo-router";
-import { API_URL, useAuth } from "@/app/context/AuthContext";
-import { useDate } from "@/app/context/DateContext";
+import { API_URL, useAuth } from "@/context/AuthContext";
+import { useDate } from "@/context/DateContext";
 import Botao from "@/components/Botao";
 import BackButton from "@/components/BackButton";
 import { useHorarios } from "@/hooks/useHorarios";
@@ -103,7 +103,7 @@ const Tarde = () => {
                 <Checkbox
                   status={horario.available ? "checked" : "unchecked"}
                   onPress={() => toggleDisponibilidade(index)}
-                  color={horario.available ? "#008739" : "#ccc"}
+                  color={horario.available ? "#32A041" : "#ccc"}
                 />
               </View>
             </View>
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#008739",
+    color: "#32A041",
     textAlign: "center",
     marginVertical: 10,
   },

@@ -7,7 +7,7 @@ export default function ProfessorTabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#008739",
+        tabBarActiveTintColor: "#32A041",
         tabBarInactiveTintColor: "gray",
         tabBarStyle: {
           backgroundColor: "#fff",

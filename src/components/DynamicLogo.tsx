@@ -1,6 +1,6 @@
 import React from "react";
 import { Image, View, StyleSheet, Text } from "react-native";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import placeholder from "../../assets/images/placeholder.png";
 import { fontFamily } from "@/theme/font-family";
 
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   },
   appNameText: {
     fontSize: 40,
-    color: "#008739",
+    color: "#32A041",
     marginTop: 10,
     textAlign: "center",
     lineHeight: 42,

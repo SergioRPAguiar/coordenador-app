@@ -2,7 +2,7 @@ import React from "react";
 import { View, StyleSheet, Pressable, Text } from "react-native";
 import { Calendar, LocaleConfig } from "react-native-calendars";
 import { useRouter } from "expo-router";
-import { useDate } from "@/app/context/DateContext";
+import { useDate } from "@/context/DateContext";
 import dayjs from "dayjs";
 
 LocaleConfig.locales["pt-br"] = {
@@ -81,8 +81,8 @@ const Calendario = ({ isProfessor }: { isProfessor: boolean }) => {
               }
               disabled={isDisabled}
               style={{
-                backgroundColor: isSelected ? "#008739" : "transparent",
-                borderColor: isToday ? "#008739" : "transparent",
+                backgroundColor: isSelected ? "#32A041" : "transparent",
+                borderColor: isToday ? "#32A041" : "transparent",
                 borderWidth: isToday ? 2 : 0,
                 borderRadius: 19,
                 width: 38,
@@ -108,14 +108,14 @@ const Calendario = ({ isProfessor }: { isProfessor: boolean }) => {
         disableAllTouchEventsForDisabledDays
         theme={{
           calendarBackground: "#ffffff",
-          textSectionTitleColor: "#008739",
+          textSectionTitleColor: "#32A041",
           arrowColor: "#000",
           monthTextColor: "#000",
           textMonthFontSize: 22,
           textMonthFontWeight: "700",
           textDayHeaderFontSize: 14,
           textDayHeaderFontWeight: "600",
-          todayTextColor: "#008739",
+          todayTextColor: "#32A041",
           "stylesheet.calendar.header": {
             week: {
               flexDirection: "row",

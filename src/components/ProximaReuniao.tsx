@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
-import { API_URL, useAuth } from "@/app/context/AuthContext";
+import { API_URL, useAuth } from "@/context/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import dayjs from "dayjs";
 
@@ -22,6 +22,7 @@ const ProximaReuniaoProfessor = () => {
     async function fetchNext() {
       setLoading(true);
       try {
+        if (!authState.authenticated || !authState.token) return;
         const { data } = await axios.get(
           `${API_URL}/meeting/nextForProfessor`,
           {
@@ -51,17 +52,15 @@ const ProximaReuniaoProfessor = () => {
         <MaterialCommunityIcons
           name="calendar-clock"
           size={22}
-          color="#008739"
+          color="#32A041"
         />
         <Text style={styles.cardTitle}>Próxima Reunião</Text>
       </View>
 
       {loading ? (
-        <ActivityIndicator size="small" color="#008739" />
+        <ActivityIndicator size="small" color="#32A041" />
       ) : (
-        <Text style={styles.reuniao}>
-          {proximaReuniao ?? "—"}
-        </Text>
+        <Text style={styles.reuniao}>{proximaReuniao ?? "—"}</Text>
       )}
 
       <TouchableOpacity
@@ -95,7 +94,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#008739",
+    color: "#32A041",
     marginLeft: 8,
   },
   reuniao: {
@@ -105,7 +104,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignSelf: "flex-start",
-    backgroundColor: "#008739",
+    backgroundColor: "#32A041",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,

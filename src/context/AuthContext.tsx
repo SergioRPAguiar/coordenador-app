@@ -48,7 +48,6 @@ interface AuthProps {
 
 const TOKEN_KEY = "my-jwt";
 export const API_URL = "http://ifms.pro.br:2065";
-//export const API_URL = "http://192.168.200.31:3000";
 const AuthContext = createContext<AuthProps | undefined>(undefined);
 
 export const useAuth = () => {
@@ -65,7 +64,7 @@ export const AuthProvider = ({ children }: any) => {
     authenticated: false,
     user: null,
     logoConfig: {
-      appName: "Agenda Cotad",
+      appName: "Coordenador.App",
       url: `${API_URL}/files/logo.png`,
     },
   });
@@ -78,7 +77,7 @@ export const AuthProvider = ({ children }: any) => {
       setAuthState((prev) => ({
         ...prev,
         logoConfig: {
-          appName: response.data.appName || "Agenda Cotad",
+          appName: response.data.appName || "Coordenador.App",
           url: response.data.logoUrl || `${API_URL}/files/logo.png`,
         },
       }));
@@ -155,7 +154,7 @@ export const AuthProvider = ({ children }: any) => {
           authenticated: !!token,
           user: null,
           logoConfig: {
-            appName: config.data.appName || "Agenda Cotad",
+            appName: config.data.appName || "Coordenador.App",
             url: config.data.logoUrl || `${API_URL}/files/logo.png`,
           },
         };
@@ -249,7 +248,7 @@ export const AuthProvider = ({ children }: any) => {
       authenticated: false,
       user: null,
       logoConfig: {
-        appName: "Agenda Cotad",
+        appName: "Coordenador.App",
         url: `${API_URL}/files/logo.png`,
       },
     });

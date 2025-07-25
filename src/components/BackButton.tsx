@@ -40,7 +40,7 @@ const BackButton = () => {
         zIndex: 4,
       }}
     >
-      <MaterialIcons name="arrow-back" size={24} color="#008739" />
+      <MaterialIcons name="arrow-back" size={24} color="#32A041" />
     </TouchableOpacity>
   );
 };

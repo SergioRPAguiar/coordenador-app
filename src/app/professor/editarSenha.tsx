@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, StyleSheet, Alert, Text } from "react-native";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import Input from "@/components/Input";
 import BotaoComLoading from "@/components/BotaoComLoading";
 import { useRouter } from "expo-router";
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#008739",
+    color: "#32A041",
     marginBottom: 20,
     marginTop: 50,
     fontFamily: "Poppins_600SemiBold",

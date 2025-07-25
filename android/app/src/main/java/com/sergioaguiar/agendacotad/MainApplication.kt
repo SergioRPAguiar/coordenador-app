@@ -1,4 +1,4 @@
-package com.sergioaguiar.agendacotad
+package com.sergioaguiar.coordenadorapp
 
 import android.app.Application
 import android.content.res.Configuration

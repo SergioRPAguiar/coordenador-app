@@ -12,7 +12,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import Input from "@/components/Input";
 import BotaoComLoading from "@/components/BotaoComLoading";
-import { API_URL } from "@/app/context/AuthContext";
+import { API_URL } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import DynamicLogo from "@/components/DynamicLogo";
 import { theme } from "@/theme";
@@ -133,10 +133,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
     fontWeight: "bold",
-    color: "#008739",
+    color: "#32A041",
   },
   linkText: {
-    color: "#008739",
+    color: "#32A041",
     fontSize: 14,
     textDecorationLine: "underline",
     fontFamily: theme.fontFamily.medium,

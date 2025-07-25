@@ -12,7 +12,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import Input from "@/components/Input";
-import { API_URL } from "@/app/context/AuthContext";
+import { API_URL } from "@/context/AuthContext";
 import axios from "axios";
 import DynamicLogo from "@/components/DynamicLogo";
 import { theme } from "@/theme";
@@ -138,10 +138,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 20,
-    color: "#008739",
+    color: "#32A041",
   },
   linkText: {
-    color: "#008739",
+    color: "#32A041",
     fontSize: 14,
     textDecorationLine: "underline",
     fontFamily: theme.fontFamily.medium,

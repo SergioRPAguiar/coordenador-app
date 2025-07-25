@@ -9,9 +9,9 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { API_URL } from "@/app/context/AuthContext";
+import { API_URL } from "@/context/AuthContext";
 import { router, useFocusEffect } from "expo-router";
 import BackButton from "@/components/BackButton";
 import { format } from "date-fns";
@@ -51,7 +51,7 @@ const ReunioesMarcadasAlunos = () => {
 
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/meeting/allForStudent`, {
+      const response = await axios.get(`${API_URL}/meeting/allFutureForStudent`, {
         params: { userId: authState.user._id },
         headers: { Authorization: `Bearer ${authState.token}` },
       });
@@ -66,10 +66,12 @@ const ReunioesMarcadasAlunos = () => {
     }
   };
   useFocusEffect(
-    React.useCallback(() => {
+  React.useCallback(() => {
+    if (authState?.authenticated && authState?.user?._id) {
       fetchReunioes();
-    }, [authState?.user?._id])
-  );
+    }
+  }, [authState?.authenticated, authState?.user?._id])
+);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -181,7 +183,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     elevation: 2,
   },
-  title: { fontSize: 18, fontWeight: "600", color: "#008739", marginBottom: 8 },
+  title: { fontSize: 18, fontWeight: "600", color: "#32A041", marginBottom: 8 },
   labelBold: { fontWeight: "600" },
   input: {
     borderWidth: 1,

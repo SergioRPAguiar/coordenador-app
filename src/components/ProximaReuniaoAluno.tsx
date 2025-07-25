@@ -6,10 +6,10 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import axios from "axios";
-import { API_URL } from "@/app/context/AuthContext";
+import { API_URL } from "@/context/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { theme } from "@/theme";
 import dayjs from "dayjs";
@@ -24,11 +24,19 @@ const ProximaReuniaoAluno = () => {
     async function fetchNext() {
       setLoading(true);
       try {
-        if (!authState.user?._id) throw new Error("Usuário não autenticado");
+        if (
+          !authState.authenticated ||
+          !authState.user?._id ||
+          !authState.token
+        ) {
+          return;
+        }
+
         const { data } = await axios.get(`${API_URL}/meeting/next`, {
           params: { userId: authState.user._id },
           headers: { Authorization: `Bearer ${authState.token}` },
         });
+
         if (data) {
           const formatted = dayjs(data.date).format("DD/MM/YYYY");
           setProximaReuniao(`${formatted} | ${data.timeSlot}`);
@@ -42,6 +50,7 @@ const ProximaReuniaoAluno = () => {
         setLoading(false);
       }
     }
+
     fetchNext();
   }, [authState]);
 
@@ -51,17 +60,15 @@ const ProximaReuniaoAluno = () => {
         <MaterialCommunityIcons
           name="calendar-clock"
           size={22}
-          color="#008739"
+          color="#32A041"
         />
         <Text style={styles.cardTitle}>Próxima Reunião</Text>
       </View>
 
       {loading ? (
-        <ActivityIndicator size="small" color="#008739" />
+        <ActivityIndicator size="small" color="#32A041" />
       ) : (
-        <Text style={styles.reuniao}>
-          {proximaReuniao ?? "—"}
-        </Text>
+        <Text style={styles.reuniao}>{proximaReuniao ?? "—"}</Text>
       )}
 
       <TouchableOpacity
@@ -95,7 +102,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#008739",
+    color: "#32A041",
     marginLeft: 8,
   },
   reuniao: {
@@ -105,7 +112,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignSelf: "flex-start",
-    backgroundColor: "#008739",
+    backgroundColor: "#32A041",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,

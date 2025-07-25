@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import ProximaReuniaoAluno from "@/components/ProximaReuniaoAluno";
 import Calendario from "@/components/Calendario";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { theme } from "@/theme";
 import { useFocusEffect } from "expo-router";
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#008739",
+    color: "#32A041",
   },
   logoutButton: {
     flexDirection: "row",
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#008739",
+    color: "#32A041",
     marginTop: 8,
     marginBottom: 8,
     marginLeft: 4,

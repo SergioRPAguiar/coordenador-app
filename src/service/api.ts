@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_URL } from "@/app/context/AuthContext";
+import { API_URL } from "@/context/AuthContext";
 
 const api = axios.create({
   baseURL: API_URL,

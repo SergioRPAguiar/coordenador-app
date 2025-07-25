@@ -11,7 +11,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { API_URL } from "@/app/context/AuthContext";
+import { API_URL } from "@/context/AuthContext";
 import Input from "@/components/Input";
 import axios from "axios";
 import DynamicLogo from "@/components/DynamicLogo";
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#008739",
+    color: "#32A041",
     marginBottom: 10,
   },
   subtitle: {
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fontFamily.primary,
   },
   linkText: {
-    color: "#008739",
+    color: "#32A041",
     fontSize: 14,
     textDecorationLine: "underline",
     fontFamily: theme.fontFamily.medium,

@@ -9,9 +9,9 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { API_URL } from "@/app/context/AuthContext";
+import { API_URL } from "@/context/AuthContext";
 import { router, useFocusEffect } from "expo-router";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     elevation: 2,
   },
-  title: { fontSize: 18, fontWeight: "600", color: "#008739", marginBottom: 8 },
+  title: { fontSize: 18, fontWeight: "600", color: "#32A041", marginBottom: 8 },
   label: { marginBottom: 4, color: "#444" },
   labelBold: { fontWeight: "600", color: "#000" },
   input: {

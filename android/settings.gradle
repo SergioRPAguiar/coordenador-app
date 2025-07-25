@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'agenda-cotad'
+rootProject.name = 'coordenador-app'
 
 dependencyResolutionManagement {
   versionCatalogs {
