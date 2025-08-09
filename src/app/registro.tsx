@@ -108,7 +108,7 @@ const Register = () => {
         <DynamicLogo />
       </View>
       <View style={styles.form}>
-        <Text style={styles.subtitle}>Acesse sua conta</Text>
+        <Text style={styles.subtitle}>Crie sua conta</Text>
         <Controller
           control={control}
           name="name"

@@ -33,10 +33,12 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     marginVertical: 10,
+    
   },
   logo: {
     width: 120,
     height: 120,
+    marginBottom: 10,
     resizeMode: "contain",
   },
   appNameText: {
