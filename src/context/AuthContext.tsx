@@ -47,7 +47,8 @@ interface AuthProps {
 }
 
 const TOKEN_KEY = "my-jwt";
-export const API_URL = "http://ifms.pro.br:2065";
+//export const API_URL = "http://ifms.pro.br:2065";
+export const API_URL = "http://192.168.200.31:3000";
 const AuthContext = createContext<AuthProps | undefined>(undefined);
 
 export const useAuth = () => {

@@ -44,7 +44,6 @@ const ProximaReuniaoAluno = () => {
           setProximaReuniao(null);
         }
       } catch (e) {
-        console.error("Erro ao buscar próxima reunião:", e);
         setProximaReuniao(null);
       } finally {
         setLoading(false);

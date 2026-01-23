@@ -2,7 +2,7 @@
   "expo": {
     "name": "coordenador-app",
     "slug": "coordenador-app",
-    "version": "1.0.0",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "config": {
         "usesNonExemptEncryption": false,
-        "newArchEnabled": true
+        "newArchEnabled": false
       },
       "bundleIdentifier": "com.sergioaguiar.coordenadorapp"
     },
@@ -27,7 +27,9 @@
       },
       "softwareKeyboardLayoutMode": "pan",
       "package": "com.sergioaguiar.coordenadorapp",
-      "newArchEnabled": true
+      "newArchEnabled": false,
+      "supportsPictureInPicture": true,
+      "jsEngine": "hermes"
     },
     "web": {
       "bundler": "metro",
