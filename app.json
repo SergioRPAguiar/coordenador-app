@@ -15,8 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "config": {
-        "usesNonExemptEncryption": false,
-        "newArchEnabled": false
+        "usesNonExemptEncryption": false
       },
       "bundleIdentifier": "com.sergioaguiar.coordenadorapp"
     },
@@ -28,7 +27,6 @@
       "softwareKeyboardLayoutMode": "pan",
       "package": "com.sergioaguiar.coordenadorapp",
       "newArchEnabled": false,
-      "supportsPictureInPicture": true,
       "jsEngine": "hermes"
     },
     "web": {
@@ -54,7 +52,8 @@
             "flipper": false
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true
